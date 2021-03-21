@@ -1,3 +1,5 @@
+from typing import Any, Dict, Union
+
 STYLE = """
 <style>
 html {
@@ -19796,3 +19798,27 @@ html.ngdialog-open {
 }
 </style>
 """
+
+
+def create_market_book_button(
+        selection_id: int,
+        market_book: Union[Dict[str, Any], 'betfairlightweight.resources.bettingresources.MarketBook'],
+        side: str,
+        depth: int) -> str:
+    html = f'<button class="{side} mv-bet-button ng-isolate-scope {side}{"-selection" if depth == 0 else ""}-button">'
+    runner_book = None
+    for r in market_book['runners']:
+        if r['selectionId'] == selection_id:
+            runner_book = r
+            break
+    if runner_book:
+        if side == 'back':
+            available = runner_book.get('ex', {}).get('availableToBack', [])
+        else:
+            available = runner_book.get('ex', {}).get('availableToLay', [])
+        if len(available) >= depth + 1:
+            html += f'<span class="bet-button-price">{round(available[depth]["price"], 2)}</span>'
+            html += f'<span class="bet-button-size">£{round(available[depth]["size"], 2)}</span>'
+    html += '</button>'
+
+    return html
