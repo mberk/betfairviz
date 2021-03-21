@@ -19861,7 +19861,31 @@ def create_market_book_table(
         depth: int = 3) -> str:
     if type(market_book) != dict:
         market_book = market_book._data
-    html = """
+    selection_count = sum(1 for r in market_book['marketDefinition']['runners'] if r['status'] != 'REMOVED')
+    html = f"""
+        <table class="runners-header">
+            <thead>
+                <tr class="rh-line without-lay">
+                    <th class="rh-runner-name-header">
+                        <span class="rh-selections-count-label ng-binding ng-scope">
+                            {selection_count} selections
+                        </span>
+                    </th>
+                    <th class="rh-book-percentage rh-back-book-percentage ng-scope">
+                        {round(calculate_book_percentage(market_book, True) * 100, 1)}%
+                    </th>
+                    <th class="rh-select-all-buttons rh-select-back-all-button ng-scope">
+                    </th>
+                    <th class="rh-select-all-buttons ng-scope">
+                    </th>
+                    <th class="rh-book-percentage rh-lay-book-percentage ng-scope">
+                        {round(calculate_book_percentage(market_book, False) * 100, 1)}%
+                    </th>
+                </tr>
+            </thead>
+        </table>
+    """
+    html += """
         <div class="marketview-list-runners-component bf-row"><div class="runners-container bf-col-24-24">
         <table class="mv-runner-list">
     """
