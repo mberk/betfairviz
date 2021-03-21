@@ -19877,14 +19877,16 @@ def _create_market_book_table(
                             {selection_count} selections
                         </span>
                     </th>
-                    <th class="rh-book-percentage rh-back-book-percentage ng-scope">
+                    <th class="rh-book-percentage rh-back-book-percentage ng-scope"
+                        style="width: {DEPTH_TO_WIDTH_MAP[depth]}">
                         {round(calculate_book_percentage(market_book, True) * 100, 1)}%
                     </th>
                     <th class="rh-select-all-buttons rh-select-back-all-button ng-scope">
                     </th>
                     <th class="rh-select-all-buttons ng-scope">
                     </th>
-                    <th class="rh-book-percentage rh-lay-book-percentage ng-scope">
+                    <th class="rh-book-percentage rh-lay-book-percentage ng-scope"
+                        style="width: {DEPTH_TO_WIDTH_MAP[depth]}">
                         {round(calculate_book_percentage(market_book, False) * 100, 1)}%
                     </th>
                 </tr>
