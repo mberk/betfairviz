@@ -1,6 +1,8 @@
 from html import escape
 from typing import Any, Dict, Union
 
+from IPython import get_ipython
+
 STYLE = """
 <style>
 html {
@@ -19880,3 +19882,11 @@ def create_iframe(
             width=100%
             onload="this.style.height=(this.contentWindow.document.body.scrollHeight+20)+\'px\';">
     """
+
+
+ip = get_ipython()
+if ip:
+    ip.display_formatter.formatters['text/html'].for_type(
+        'betfairlightweight.resources.bettingresources.MarketBook',
+        create_iframe
+    )
