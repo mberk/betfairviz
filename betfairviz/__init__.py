@@ -19892,9 +19892,19 @@ def create_iframe(
     """
 
 
+def dict_formatter(d: dict) -> str:
+    if 'runners' in d and 'marketDefinition' in d:
+        return create_iframe(d)
+
+
 ip = get_ipython()
 if ip:
     ip.display_formatter.formatters['text/html'].for_type(
         'betfairlightweight.resources.bettingresources.MarketBook',
         create_iframe
     )
+    ip.display_formatter.formatters['text/html'].for_type(
+        dict,
+        dict_formatter
+    )
+
