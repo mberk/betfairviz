@@ -19799,6 +19799,14 @@ html.ngdialog-open {
 </style>
 """
 
+SCRIPT = """
+<script>
+function resizeIframe(obj) {
+    obj.style.height = obj.contentWindow.document.documentElement.scrollHeight + 'px';
+}
+</script>
+"""
+
 
 def create_market_book_button(
         selection_id: int,
