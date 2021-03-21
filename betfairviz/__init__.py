@@ -19807,7 +19807,7 @@ def create_market_book_button(
         selection_id: int,
         market_book: Union[Dict[str, Any], 'betfairlightweight.resources.bettingresources.MarketBook'],
         side: str,
-        depth: int) -> str:
+        depth: int = 3) -> str:
     html = f'<button class="{side} mv-bet-button ng-isolate-scope {side}{"-selection" if depth == 0 else ""}-button">'
     runner_book = None
     for r in market_book['runners']:
@@ -19829,7 +19829,7 @@ def create_market_book_button(
 
 def create_market_book_table(
         market_book: Union[Dict[str, Any], 'betfairlightweight.resources.bettingresources.MarketBook'],
-        depth: int) -> str:
+        depth: int = 3) -> str:
     html = """
         <div class="marketview-list-runners-component bf-row"><div class="runners-container bf-col-24-24">
         <table class="mv-runner-list">
@@ -19867,13 +19867,13 @@ def create_market_book_table(
 
 def create_html(
         market_book: Union[Dict[str, Any], 'betfairlightweight.resources.bettingresources.MarketBook'],
-        depth: int) -> str:
+        depth: int = 3) -> str:
     return STYLE + create_market_book_table(market_book, depth)
 
 
 def create_iframe(
         market_book: Union[Dict[str, Any], 'betfairlightweight.resources.bettingresources.MarketBook'],
-        depth: int) -> str:
+        depth: int = 3) -> str:
     return f"""
         <iframe
             srcdoc="{escape(create_html(market_book, depth))}"
