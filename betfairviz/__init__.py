@@ -19802,6 +19802,11 @@ html.ngdialog-open {
 }
 </style>
 """
+DEPTH_TO_WIDTH_MAP = {
+    3: '8%',
+    4: '16%',
+    5: '24%'
+}
 
 
 def calculate_book_percentage(market_book: Dict[str, Any], is_back: bool) -> float:
@@ -19831,7 +19836,7 @@ def calculate_book_percentage(market_book: Dict[str, Any], is_back: bool) -> flo
     return sum(implied_probabilities)
 
 
-def create_market_book_button(
+def _create_market_book_button(
         selection_id: int,
         market_book: Union[Dict[str, Any], 'betfairlightweight.resources.bettingresources.MarketBook'],
         side: str,
@@ -19857,7 +19862,7 @@ def create_market_book_button(
     return html
 
 
-def create_market_book_table(
+def _create_market_book_table(
         market_book: Union[Dict[str, Any], 'betfairlightweight.resources.bettingresources.MarketBook'],
         depth: int = 3) -> str:
     if type(market_book) != dict:
@@ -19910,33 +19915,33 @@ def create_market_book_table(
         """
         for i in range(depth - 1, -1, -1):
             html += '<td class="bet-buttons">'
-            html += create_market_book_button(runner['id'], market_book, 'back', i)
+            html += _create_market_book_button(runner['id'], market_book, 'back', i)
             html += '</td>'
         for i in range(depth):
             html += '<td class="bet-buttons">'
-            html += create_market_book_button(runner['id'], market_book, 'lay', i)
+            html += _create_market_book_button(runner['id'], market_book, 'lay', i)
             html += '</td>'
         html += '</tr>'
     html += '</table></div></div>'
     return html
 
 
-def create_html(
+def _create_html(
         market_book: Union[Dict[str, Any], 'betfairlightweight.resources.bettingresources.MarketBook'],
         depth: int = 3) -> str:
     if type(market_book) != dict:
         market_book = market_book._data
-    return STYLE + create_market_book_table(market_book, depth)
+    return STYLE + _create_market_book_table(market_book, depth)
 
 
-def create_iframe(
+def _create_iframe(
         market_book: Union[Dict[str, Any], 'betfairlightweight.resources.bettingresources.MarketBook'],
         depth: int = 3) -> str:
     if type(market_book) != dict:
         market_book = market_book._data
     return f"""
         <iframe
-            srcdoc="{escape(create_html(market_book, depth))}"
+            srcdoc="{escape(_create_html(market_book, depth))}"
             scrolling="no"
             frameBorder="0"
             width=100%
@@ -19947,25 +19952,25 @@ def create_iframe(
 def visualise(
         market_book: Union[Dict[str, Any], 'betfairlightweight.resources.bettingresources.MarketBook'],
         depth: int = 3) -> HTML:
-    return HTML(create_iframe(market_book=market_book, depth=depth))
+    return HTML(_create_iframe(market_book=market_book, depth=depth))
 
 
 visualize = visualise
 
 
-def dict_formatter(d: dict) -> str:
+def _dict_formatter(d: dict) -> str:
     if 'runners' in d and 'marketDefinition' in d:
-        return create_iframe(d)
+        return _create_iframe(d)
 
 
 ip = get_ipython()
 if ip:
     ip.display_formatter.formatters['text/html'].for_type(
         'betfairlightweight.resources.bettingresources.MarketBook',
-        create_iframe
+        _create_iframe
     )
     ip.display_formatter.formatters['text/html'].for_type(
         dict,
-        dict_formatter
+        _dict_formatter
     )
 
