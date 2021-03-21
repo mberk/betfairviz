@@ -19800,14 +19800,6 @@ html.ngdialog-open {
 </style>
 """
 
-SCRIPT = """
-<script>
-function resizeIframe(obj) {
-    obj.style.height = obj.contentWindow.document.documentElement.scrollHeight + 'px';
-}
-</script>
-"""
-
 
 def create_market_book_button(
         selection_id: int,
@@ -19874,7 +19866,7 @@ def create_market_book_table(
 def create_html(
         market_book: Union[Dict[str, Any], 'betfairlightweight.resources.bettingresources.MarketBook'],
         depth: int) -> str:
-    return SCRIPT + STYLE + create_market_book_table(market_book, depth)
+    return STYLE + create_market_book_table(market_book, depth)
 
 
 def create_iframe(
