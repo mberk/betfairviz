@@ -19822,3 +19822,39 @@ def create_market_book_button(
     html += '</button>'
 
     return html
+
+
+def create_market_book_table(market_book: dict, depth: int) -> str:
+    html = """
+        <div class="marketview-list-runners-component bf-row"><div class="runners-container bf-col-24-24">
+        <table class="mv-runner-list">
+    """
+    for runner in market_book['marketDefinition']['runners']:
+        is_non_runner = runner['status'] == 'REMOVED'
+        html += ''
+        html += f"""
+        <tr class="runner-line ng-scope">
+            <td class="runner-data-container without-race-card-info">
+                <div class="market-graph-container"></div>
+                <div>
+                    <div class="runner-info">
+                        <div class="default name ng-scope">
+                            <h3 class="runner-name ng-binding">
+                                {runner['name']}{' - Non Runner' if is_non_runner else ''}
+                            </h3>
+                        </div>
+                    </div>
+                </div>
+            </td>
+        """
+        for i in range(depth - 1, -1, -1):
+            html += '<td class="bet-buttons">'
+            html += create_market_book_button(runner['id'], market_book, 'back', i)
+            html += '</td>'
+        for i in range(depth):
+            html += '<td class="bet-buttons">'
+            html += create_market_book_button(runner['id'], market_book, 'lay', i)
+            html += '</td>'
+        html += '</tr>'
+    html += '</table></div></div>'
+    return html
