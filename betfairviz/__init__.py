@@ -19835,7 +19835,7 @@ def create_market_book_button(
         selection_id: int,
         market_book: Union[Dict[str, Any], 'betfairlightweight.resources.bettingresources.MarketBook'],
         side: str,
-        depth: int = 3) -> str:
+        depth: int) -> str:
     if type(market_book) != dict:
         market_book = market_book._data
     html = f'<button class="{side} mv-bet-button ng-isolate-scope {side}{"-selection" if depth == 0 else ""}-button">'
