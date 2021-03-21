@@ -2,6 +2,7 @@ from html import escape
 from typing import Any, Dict, Union
 
 from IPython import get_ipython
+from IPython.display import HTML
 
 STYLE = """
 <style>
@@ -19941,6 +19942,12 @@ def create_iframe(
             width=100%
             onload="this.style.height=(this.contentWindow.document.body.scrollHeight+20)+\'px\';">
     """
+
+
+def visualise(
+        market_book: Union[Dict[str, Any], 'betfairlightweight.resources.bettingresources.MarketBook'],
+        depth: int = 3) -> HTML:
+    return HTML(create_iframe(market_book=market_book, depth=depth))
 
 
 def dict_formatter(d: dict) -> str:
