@@ -1,10 +1,13 @@
+from enum import Enum
 from html import escape
 from typing import Any, Dict, Union
 
 from IPython import get_ipython
 from IPython.display import HTML
+from IPython.display import Pretty
+from IPython.lib.pretty import pretty
 
-STYLE = """
+CSS_STYLE = """
 <style>
 html {
   color: #000;
@@ -19809,6 +19812,12 @@ DEPTH_TO_WIDTH_MAP = {
 }
 
 
+class Style(Enum):
+    DEFAULT = 'default'
+    RAW = 'raw'
+    VERTICAL = 'vertical'
+
+
 def calculate_book_percentage(market_book: Dict[str, Any], is_back: bool) -> float:
     implied_probabilities = []
     for runner in market_book['marketDefinition']['runners']:
@@ -19933,7 +19942,7 @@ def _create_html(
         depth: int = 3) -> str:
     if type(market_book) != dict:
         market_book = market_book._data
-    return STYLE + _create_market_book_table(market_book, depth)
+    return CSS_STYLE + _create_market_book_table(market_book, depth)
 
 
 def _create_iframe(
@@ -19953,10 +19962,21 @@ def _create_iframe(
 
 def visualise(
         market_book: Union[Dict[str, Any], 'betfairlightweight.resources.bettingresources.MarketBook'],
-        depth: int = 3) -> HTML:
+        depth: int = 3,
+        style: Union[str, Style] = Style.DEFAULT) -> Union[HTML, Pretty]:
     if 5 < depth < 3:
         raise ValueError(f'depth = {depth} is unsupported. Valid values are 3, 4 and 5')
-    return HTML(_create_iframe(market_book=market_book, depth=depth))
+    if type(style) is str:
+        style = Style(style)
+
+    if style is Style.DEFAULT:
+        return HTML(_create_iframe(market_book=market_book, depth=depth))
+    elif style is Style.RAW:
+        return Pretty(pretty(market_book))
+    elif style is Style.VERTICAL:
+        raise NotImplementedError
+    else:
+        raise ValueError(f'Unrecognised style: {style}')
 
 
 visualize = visualise
