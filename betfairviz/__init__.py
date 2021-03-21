@@ -19868,3 +19868,9 @@ def create_market_book_table(
         html += '</tr>'
     html += '</table></div></div>'
     return html
+
+
+def create_html(
+        market_book: Union[Dict[str, Any], 'betfairlightweight.resources.bettingresources.MarketBook'],
+        depth: int) -> str:
+    return SCRIPT + STYLE + create_market_book_table(market_book, depth)
