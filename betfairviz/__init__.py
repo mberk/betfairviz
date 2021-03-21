@@ -19952,6 +19952,8 @@ def _create_iframe(
 def visualise(
         market_book: Union[Dict[str, Any], 'betfairlightweight.resources.bettingresources.MarketBook'],
         depth: int = 3) -> HTML:
+    if 5 < depth < 3:
+        raise ValueError(f'depth = {depth} is unsupported. Valid values are 3, 4 and 5')
     return HTML(_create_iframe(market_book=market_book, depth=depth))
 
 
