@@ -19950,6 +19950,9 @@ def visualise(
     return HTML(create_iframe(market_book=market_book, depth=depth))
 
 
+visualize = visualise
+
+
 def dict_formatter(d: dict) -> str:
     if 'runners' in d and 'marketDefinition' in d:
         return create_iframe(d)
