@@ -1,3 +1,4 @@
+from html import escape
 from typing import Any, Dict, Union
 
 STYLE = """
@@ -19874,3 +19875,16 @@ def create_html(
         market_book: Union[Dict[str, Any], 'betfairlightweight.resources.bettingresources.MarketBook'],
         depth: int) -> str:
     return SCRIPT + STYLE + create_market_book_table(market_book, depth)
+
+
+def create_iframe(
+        market_book: Union[Dict[str, Any], 'betfairlightweight.resources.bettingresources.MarketBook'],
+        depth: int) -> str:
+    return f"""
+        <iframe
+            srcdoc="{escape(create_html(market_book, depth))}"
+            scrolling="no"
+            frameBorder="0"
+            width=100%
+            onload="this.style.height=(this.contentWindow.document.body.scrollHeight+20)+\'px\';">
+    """
