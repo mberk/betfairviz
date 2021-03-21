@@ -19832,7 +19832,9 @@ def create_market_book_button(
     return html
 
 
-def create_market_book_table(market_book: dict, depth: int) -> str:
+def create_market_book_table(
+        market_book: Union[Dict[str, Any], 'betfairlightweight.resources.bettingresources.MarketBook'],
+        depth: int) -> str:
     html = """
         <div class="marketview-list-runners-component bf-row"><div class="runners-container bf-col-24-24">
         <table class="mv-runner-list">
