@@ -24477,6 +24477,19 @@ def _create_market_book_iframe(
     """
 
 
+def _create_runner_book_iframe(runner_book: Union[Dict[str, Any], RunnerBook]) -> str:
+    if type(runner_book) != dict:
+        runner_book = runner_book._data
+    return f"""
+        <iframe
+            srcdoc="{escape(_create_runner_book_html(runner_book))}"
+            scrolling="no"
+            frameBorder="0"
+            width=100%
+            onload="this.style.height=(this.contentWindow.document.body.scrollHeight+20)+\'px\';">
+    """
+
+
 def visualise(
         market_book: Union[Dict[str, Any], MarketBook],
         depth: int = 3,
