@@ -1,3 +1,4 @@
+import itertools
 from enum import Enum
 from html import escape
 from typing import Any, Dict, Union
@@ -24320,8 +24321,56 @@ html.ngdialog-open {
   background-color: #fff;
   color: #303030;
 }
+.ladder-table {
+  display:block;
+  border-collapse:collapse;
+  overflow-y:auto;
+  overflow-x:hidden;
+  max-height:644px;
+  border:1px solid #F0F1F5;
+  font:normal normal normal 12px "Arial","sans-serif";
+}
+.ladder-table thead {
+  display:table;
+  width:100%
+}
+.ladder-table th {
+  height:18px;
+  padding:5px;
+  text-align:center;
+  font:normal normal bold 12px "Arial","sans-serif";
+}
+.ladder-table .titles th {
+  background-color:#F0F1F5
+}
+.ladder-table tbody tr {
+  display: table;
+  width: 100%;
+  table-layout:fixed
+}
+.ladder-table td {
+  padding:5px;
+  font:normal normal normal 12px "Arial","sans-serif";
+}
+.ladder-table .item td .price {
+  text-align:left
+}
+.ladder-table .item td.price.back-color,
+.ladder-table .item td.back.back-color {
+  background-color:#A6D8FF
+}
+.ladder-table .item td.price.lay-color,
+.ladder-table .item td.lay.lay-color {
+  background-color:#FAC9D1
+}
+.ladder-table .item td.back,
+.ladder-table .item td.lay,
+.ladder-table .item td.traded {
+  text-align:right
+}
 </style>
 """
+
 DEPTH_TO_WIDTH_MAP = {
     3: '8%',
     4: '16%',
@@ -24451,6 +24500,43 @@ def _create_market_book_table(
             html += '</td>'
         html += '</tr>'
     html += '</table></div></div>'
+    return html
+
+
+def _create_runner_book_table(runner_book: Union[Dict[str, Any], RunnerBook]) -> str:
+    if type(runner_book) != dict:
+        runner_book = runner_book._data
+    price_to_atb = {price_size['price']: f"£{round(price_size['size'], 2)}" for price_size in runner_book['ex']['availableToBack']}
+    price_to_atl = {price_size['price']: f"£{round(price_size['size'], 2)}" for price_size in runner_book['ex']['availableToLay']}
+    price_to_trd = {price_size['price']: f"£{round(price_size['size'], 2)}" for price_size in runner_book['ex']['tradedVolume']}
+    all_prices = sorted(set(itertools.chain(price_to_atb.keys(), price_to_atl.keys(), price_to_trd.keys())))
+    html = f"""
+    <table class="ladder-table" cellspacing="0">
+        <thead>
+            <tr class="titles">
+                <th class="exchange-traded ng-scope" colspan=4>{runner_book["selectionId"]}</th>
+            </tr>
+            <tr class="headers">
+                <th class="price ng-scope">Price</th>
+                <th class="back ng-scope">To Back</th>
+                <th class="lay ng-scope">To Lay</th>
+                <th class="trader ng-scope">Traded</th>
+            </tr>
+        </thead>
+        <tbody>"""
+    for price in all_prices:
+        html += f"""
+            <tr class="item ng-scope">
+            <td class="price{' back-color' if price in price_to_atb else ' lay-color' if price in price_to_atl else ''}">{round(price, 2)}</td>
+            <td class="back{' back-color' if price in price_to_atb else ''}">{price_to_atb.get(price, '')}</td>
+            <td class="lay{' lay-color' if price in price_to_atl else ''}">{price_to_atl.get(price, '')}</td>
+            <td class="traded">{price_to_trd.get(price, '')}</td>
+            </tr>
+        """
+    html += """
+        </tbody>
+    </table>
+    """
     return html
 
 
