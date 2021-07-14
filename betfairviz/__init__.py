@@ -7,6 +7,9 @@ from IPython.display import HTML
 from IPython.display import Pretty
 from IPython.lib.pretty import pretty
 
+from betfairutil import is_market_book
+from betfairutil import is_runner_book
+
 EXAMPLE_MARKET_BOOK = {
     'betDelay': 1,
     'bspReconciled': True,
@@ -24492,8 +24495,10 @@ visualize = visualise
 
 
 def _dict_formatter(d: dict) -> str:
-    if 'runners' in d and 'marketDefinition' in d:
+    if is_market_book(d):
         return _create_market_book_iframe(d)
+    if is_runner_book(d):
+        return _create_runner_book_iframe(d)
 
 
 ip = get_ipython()
