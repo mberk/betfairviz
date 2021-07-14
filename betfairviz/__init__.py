@@ -24351,6 +24351,9 @@ html.ngdialog-open {
 .ladder-table td {
   padding:5px;
   font:normal normal normal 12px "Arial","sans-serif";
+  border:1px solid #DFDFDf;
+  border-bottom:0;
+  height:14px
 }
 .ladder-table .item td .price {
   text-align:left
