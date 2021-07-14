@@ -24462,6 +24462,12 @@ def _create_market_book_html(
     return CSS_STYLE + _create_market_book_table(market_book, depth)
 
 
+def _create_runner_book_html(runner_book: Union[Dict[str, Any], RunnerBook]) -> str:
+    if type(runner_book) != dict:
+        runner_book = runner_book._data
+    return CSS_STYLE + _create_runner_book_table(runner_book)
+
+
 def _create_market_book_iframe(
         market_book: Union[Dict[str, Any], MarketBook],
         depth: int = 3) -> str:
