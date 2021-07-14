@@ -24454,7 +24454,7 @@ def _create_market_book_table(
     return html
 
 
-def _create_html(
+def _create_market_book_html(
         market_book: Union[Dict[str, Any], MarketBook],
         depth: int = 3) -> str:
     if type(market_book) != dict:
@@ -24469,7 +24469,7 @@ def _create_market_book_iframe(
         market_book = market_book._data
     return f"""
         <iframe
-            srcdoc="{escape(_create_html(market_book, depth))}"
+            srcdoc="{escape(_create_market_book_html(market_book, depth))}"
             scrolling="no"
             frameBorder="0"
             width=100%
