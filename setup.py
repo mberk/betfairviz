@@ -3,6 +3,11 @@ from setuptools import setup
 with open('README.md', 'r') as f:
     long_description = f.read()
 
+requires = [
+    'betfairlightweight',
+    'betfairutil'
+]
+
 setup(
     name='betfairviz',
     version='0.0.1',
@@ -13,6 +18,7 @@ setup(
     author_email='maurice@mauriceberk.com',
     url='https://github.com/mberk/betfairviz',
     packages=['betfairviz'],
+    install_requires=requires,
     tests_require=[],
     classifiers=[
         'Programming Language :: Python :: 3',
