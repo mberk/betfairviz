@@ -4521,6 +4521,9 @@ EXAMPLE_MARKET_BOOK = {
     'totalMatched': None,
     'version': 3342028375
 }
+
+EXAMPLE_RUNNER_BOOK = EXAMPLE_MARKET_BOOK['runners'][0]
+
 CSS_STYLE = """
 <style>
 html {
