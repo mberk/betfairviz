@@ -2,6 +2,8 @@ from enum import Enum
 from html import escape
 from typing import Any, Dict, Union
 
+from betfairlightweight.resources.bettingresources import MarketBook
+from betfairlightweight.resources.bettingresources import RunnerBook
 from IPython import get_ipython
 from IPython.display import HTML
 from IPython.display import Pretty
@@ -24359,7 +24361,7 @@ def calculate_book_percentage(market_book: Dict[str, Any], is_back: bool) -> flo
 
 def _create_market_book_button(
         selection_id: int,
-        market_book: Union[Dict[str, Any], 'betfairlightweight.resources.bettingresources.MarketBook'],
+        market_book: Union[Dict[str, Any], MarketBook],
         side: str,
         depth: int) -> str:
     if type(market_book) != dict:
@@ -24384,7 +24386,7 @@ def _create_market_book_button(
 
 
 def _create_market_book_table(
-        market_book: Union[Dict[str, Any], 'betfairlightweight.resources.bettingresources.MarketBook'],
+        market_book: Union[Dict[str, Any], MarketBook],
         depth: int = 3) -> str:
     if type(market_book) != dict:
         market_book = market_book._data
@@ -24450,7 +24452,7 @@ def _create_market_book_table(
 
 
 def _create_html(
-        market_book: Union[Dict[str, Any], 'betfairlightweight.resources.bettingresources.MarketBook'],
+        market_book: Union[Dict[str, Any], MarketBook],
         depth: int = 3) -> str:
     if type(market_book) != dict:
         market_book = market_book._data
@@ -24458,7 +24460,7 @@ def _create_html(
 
 
 def _create_market_book_iframe(
-        market_book: Union[Dict[str, Any], 'betfairlightweight.resources.bettingresources.MarketBook'],
+        market_book: Union[Dict[str, Any], MarketBook],
         depth: int = 3) -> str:
     if type(market_book) != dict:
         market_book = market_book._data
@@ -24473,7 +24475,7 @@ def _create_market_book_iframe(
 
 
 def visualise(
-        market_book: Union[Dict[str, Any], 'betfairlightweight.resources.bettingresources.MarketBook'],
+        market_book: Union[Dict[str, Any], MarketBook],
         depth: int = 3,
         style: Union[str, Style] = Style.DEFAULT) -> Union[HTML, Pretty]:
     if (5 < depth) or (depth < 3):
@@ -24504,7 +24506,7 @@ def _dict_formatter(d: dict) -> str:
 ip = get_ipython()
 if ip:
     ip.display_formatter.formatters['text/html'].for_type(
-        'betfairlightweight.resources.bettingresources.MarketBook',
+        MarketBook,
         _create_market_book_iframe
     )
     ip.display_formatter.formatters['text/html'].for_type(
