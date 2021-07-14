@@ -24454,7 +24454,7 @@ def _create_html(
     return CSS_STYLE + _create_market_book_table(market_book, depth)
 
 
-def _create_iframe(
+def _create_market_book_iframe(
         market_book: Union[Dict[str, Any], 'betfairlightweight.resources.bettingresources.MarketBook'],
         depth: int = 3) -> str:
     if type(market_book) != dict:
@@ -24479,7 +24479,7 @@ def visualise(
         style = Style(style)
 
     if style is Style.DEFAULT:
-        return HTML(_create_iframe(market_book=market_book, depth=depth))
+        return HTML(_create_market_book_iframe(market_book=market_book, depth=depth))
     elif style is Style.RAW:
         return Pretty(pretty(market_book))
     elif style is Style.VERTICAL:
@@ -24493,14 +24493,14 @@ visualize = visualise
 
 def _dict_formatter(d: dict) -> str:
     if 'runners' in d and 'marketDefinition' in d:
-        return _create_iframe(d)
+        return _create_market_book_iframe(d)
 
 
 ip = get_ipython()
 if ip:
     ip.display_formatter.formatters['text/html'].for_type(
         'betfairlightweight.resources.bettingresources.MarketBook',
-        _create_iframe
+        _create_market_book_iframe
     )
     ip.display_formatter.formatters['text/html'].for_type(
         dict,
