@@ -24510,6 +24510,10 @@ if ip:
         _create_market_book_iframe
     )
     ip.display_formatter.formatters['text/html'].for_type(
+        RunnerBook,
+        _create_runner_book_iframe
+    )
+    ip.display_formatter.formatters['text/html'].for_type(
         dict,
         _dict_formatter
     )
