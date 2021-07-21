@@ -24473,7 +24473,7 @@ def visualise(
         market_book: Union[Dict[str, Any], 'betfairlightweight.resources.bettingresources.MarketBook'],
         depth: int = 3,
         style: Union[str, Style] = Style.DEFAULT) -> Union[HTML, Pretty]:
-    if 5 < depth < 3:
+    if (5 < depth) or (depth < 3):
         raise ValueError(f'depth = {depth} is unsupported. Valid values are 3, 4 and 5')
     if type(style) is str:
         style = Style(style)
