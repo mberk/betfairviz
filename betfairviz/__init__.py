@@ -1,7 +1,7 @@
 import itertools
 from enum import Enum
 from html import escape
-from typing import Any, Dict, Union
+from typing import Any, Dict, Optional, Union
 
 from betfairlightweight.resources.bettingresources import MarketBook
 from betfairlightweight.resources.bettingresources import RunnerBook
@@ -24505,7 +24505,7 @@ def _create_market_book_table(
     return html
 
 
-def _create_runner_book_table(runner_book: Union[Dict[str, Any], RunnerBook]) -> str:
+def _create_runner_book_table(runner_book: Union[Dict[str, Any], RunnerBook], runner_name: Optional[str] = None) -> str:
     if type(runner_book) is dict:
         price_to_atb = {price_size['price']: f"£{round(price_size['size'], 2)}" for price_size in runner_book['ex']['availableToBack']}
         price_to_atl = {price_size['price']: f"£{round(price_size['size'], 2)}" for price_size in runner_book['ex']['availableToLay']}
@@ -24516,12 +24516,13 @@ def _create_runner_book_table(runner_book: Union[Dict[str, Any], RunnerBook]) ->
         price_to_atl = {price_size.price: f'£{round(price_size.size, 2)}' for price_size in runner_book.ex.available_to_lay}
         price_to_trd = {price_size.price: f'£{round(price_size.size, 2)}' for price_size in runner_book.ex.traded_volume}
         selection_id = runner_book.selection_id
+    title = selection_id if runner_name is None else runner_name
     all_prices = sorted(set(itertools.chain(price_to_atb.keys(), price_to_atl.keys(), price_to_trd.keys())))
     html = f"""
     <table class="ladder-table" cellspacing="0">
         <thead>
             <tr class="titles">
-                <th class="exchange-traded ng-scope" colspan=4>{selection_id}</th>
+                <th class="exchange-traded ng-scope" colspan=4>{title}</th>
             </tr>
             <tr class="headers">
                 <th class="price ng-scope">Price</th>
@@ -24555,8 +24556,8 @@ def _create_market_book_html(
     return CSS_STYLE + _create_market_book_table(market_book, depth)
 
 
-def _create_runner_book_html(runner_book: Union[Dict[str, Any], RunnerBook]) -> str:
-    return CSS_STYLE + _create_runner_book_table(runner_book)
+def _create_runner_book_html(runner_book: Union[Dict[str, Any], RunnerBook], runner_name: Optional[str] = None) -> str:
+    return CSS_STYLE + _create_runner_book_table(runner_book, runner_name=runner_name)
 
 
 def _create_market_book_iframe(
@@ -24574,10 +24575,12 @@ def _create_market_book_iframe(
     """
 
 
-def _create_runner_book_iframe(runner_book: Union[Dict[str, Any], RunnerBook]) -> str:
+def _create_runner_book_iframe(
+        runner_book: Union[Dict[str, Any], RunnerBook],
+        runner_name: Optional[str] = None) -> str:
     return f"""
         <iframe
-            srcdoc="{escape(_create_runner_book_html(runner_book))}"
+            srcdoc="{escape(_create_runner_book_html(runner_book, runner_name=runner_name))}"
             scrolling="no"
             frameBorder="0"
             width=100%
@@ -24588,6 +24591,7 @@ def _create_runner_book_iframe(runner_book: Union[Dict[str, Any], RunnerBook]) -
 def visualise(
         market_book_or_runner_book: Union[Dict[str, Any], MarketBook, RunnerBook],
         depth: int = 3,
+        runner_name: Optional[str] = None,
         style: Union[str, Style] = Style.DEFAULT) -> Union[HTML, Pretty]:
     if (5 < depth) or (depth < 3):
         raise ValueError(f'depth = {depth} is unsupported. Valid values are 3, 4 and 5')
@@ -24605,7 +24609,7 @@ def visualise(
     elif is_runner_book(market_book_or_runner_book):
         runner_book = market_book_or_runner_book
         if style is Style.DEFAULT:
-            return HTML(_create_runner_book_iframe(runner_book=runner_book))
+            return HTML(_create_runner_book_iframe(runner_book=runner_book, runner_name=runner_name))
         elif style is Style.RAW:
             return Pretty(pretty(runner_book))
         else:
