@@ -24507,17 +24507,22 @@ def _create_market_book_table(
 
 
 def _create_runner_book_table(runner_book: Union[Dict[str, Any], RunnerBook]) -> str:
-    if type(runner_book) != dict:
-        runner_book = runner_book._data
-    price_to_atb = {price_size['price']: f"£{round(price_size['size'], 2)}" for price_size in runner_book['ex']['availableToBack']}
-    price_to_atl = {price_size['price']: f"£{round(price_size['size'], 2)}" for price_size in runner_book['ex']['availableToLay']}
-    price_to_trd = {price_size['price']: f"£{round(price_size['size'], 2)}" for price_size in runner_book['ex']['tradedVolume']}
+    if type(runner_book) is dict:
+        price_to_atb = {price_size['price']: f"£{round(price_size['size'], 2)}" for price_size in runner_book['ex']['availableToBack']}
+        price_to_atl = {price_size['price']: f"£{round(price_size['size'], 2)}" for price_size in runner_book['ex']['availableToLay']}
+        price_to_trd = {price_size['price']: f"£{round(price_size['size'], 2)}" for price_size in runner_book['ex']['tradedVolume']}
+        selection_id = runner_book['selectionId']
+    else:
+        price_to_atb = {price_size.price: f'£{round(price_size.size, 2)}' for price_size in runner_book.ex.available_to_back}
+        price_to_atl = {price_size.price: f'£{round(price_size.size, 2)}' for price_size in runner_book.ex.available_to_lay}
+        price_to_trd = {price_size.price: f'£{round(price_size.size, 2)}' for price_size in runner_book.ex.traded_volume}
+        selection_id = runner_book.selection_id
     all_prices = sorted(set(itertools.chain(price_to_atb.keys(), price_to_atl.keys(), price_to_trd.keys())))
     html = f"""
     <table class="ladder-table" cellspacing="0">
         <thead>
             <tr class="titles">
-                <th class="exchange-traded ng-scope" colspan=4>{runner_book["selectionId"]}</th>
+                <th class="exchange-traded ng-scope" colspan=4>{selection_id}</th>
             </tr>
             <tr class="headers">
                 <th class="price ng-scope">Price</th>
@@ -24552,8 +24557,6 @@ def _create_market_book_html(
 
 
 def _create_runner_book_html(runner_book: Union[Dict[str, Any], RunnerBook]) -> str:
-    if type(runner_book) != dict:
-        runner_book = runner_book._data
     return CSS_STYLE + _create_runner_book_table(runner_book)
 
 
@@ -24573,8 +24576,6 @@ def _create_market_book_iframe(
 
 
 def _create_runner_book_iframe(runner_book: Union[Dict[str, Any], RunnerBook]) -> str:
-    if type(runner_book) != dict:
-        runner_book = runner_book._data
     return f"""
         <iframe
             srcdoc="{escape(_create_runner_book_html(runner_book))}"
