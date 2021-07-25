@@ -24586,7 +24586,7 @@ def _create_runner_book_iframe(runner_book: Union[Dict[str, Any], RunnerBook]) -
 
 
 def visualise(
-        market_book: Union[Dict[str, Any], MarketBook],
+        market_book_or_runner_book: Union[Dict[str, Any], MarketBook, RunnerBook],
         depth: int = 3,
         style: Union[str, Style] = Style.DEFAULT) -> Union[HTML, Pretty]:
     if (5 < depth) or (depth < 3):
@@ -24594,12 +24594,24 @@ def visualise(
     if type(style) is str:
         style = Style(style)
 
-    if style is Style.DEFAULT:
-        return HTML(_create_market_book_iframe(market_book=market_book, depth=depth))
-    elif style is Style.RAW:
-        return Pretty(pretty(market_book))
+    if is_market_book(market_book_or_runner_book):
+        market_book = market_book_or_runner_book
+        if style is Style.DEFAULT:
+            return HTML(_create_market_book_iframe(market_book=market_book, depth=depth))
+        elif style is Style.RAW:
+            return Pretty(pretty(market_book))
+        else:
+            raise ValueError(f'Unrecognised style: {style}')
+    elif is_runner_book(market_book_or_runner_book):
+        runner_book = market_book_or_runner_book
+        if style is Style.DEFAULT:
+            return HTML(_create_runner_book_iframe(runner_book=runner_book))
+        elif style is Style.RAW:
+            return Pretty(pretty(runner_book))
+        else:
+            raise ValueError(f'Unrecognised style: {style}')
     else:
-        raise ValueError(f'Unrecognised style: {style}')
+        raise TypeError(f'market_book_or_runner_book is neither a market book nor a runner book')
 
 
 visualize = visualise
