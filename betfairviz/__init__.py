@@ -24384,7 +24384,6 @@ DEPTH_TO_WIDTH_MAP = {
 class Style(Enum):
     DEFAULT = 'default'
     RAW = 'raw'
-    VERTICAL = 'vertical'
 
 
 def calculate_book_percentage(market_book: Dict[str, Any], is_back: bool) -> float:
@@ -24599,8 +24598,6 @@ def visualise(
         return HTML(_create_market_book_iframe(market_book=market_book, depth=depth))
     elif style is Style.RAW:
         return Pretty(pretty(market_book))
-    elif style is Style.VERTICAL:
-        raise NotImplementedError
     else:
         raise ValueError(f'Unrecognised style: {style}')
 
