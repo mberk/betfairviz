@@ -1,3 +1,4 @@
+import datetime
 import itertools
 from enum import Enum
 from html import escape
@@ -24445,7 +24446,38 @@ def _create_market_book_table(
     if type(market_book) != dict:
         market_book = market_book._data
     selection_count = sum(1 for r in market_book['marketDefinition']['runners'] if r['status'] != 'REMOVED')
+    publish_time_as_datetime = datetime.datetime.utcfromtimestamp(market_book['publishTime'] / 1000)
+    market_time_date_as_datetime = datetime.datetime.strptime(market_book['marketDefinition']['marketTime'], '%Y-%m-%dT%H:%M:%S.%fZ')
+
+    if publish_time_as_datetime < market_time_date_as_datetime:
+        relative_time_string = f'{market_time_date_as_datetime - publish_time_as_datetime} until marketTime'
+    else:
+        relative_time_string = f'{publish_time_as_datetime - market_time_date_as_datetime} since marketTime'
+    title = market_book['marketDefinition']['eventName']
+    if 'name' in market_book['marketDefinition']:
+        title += market_book['marketDefinition']['name']
     html = f"""
+        <div class="sports-header-container">
+            <div class="sports">
+                <div class="bf-col-15-24">
+                    <span class="title" style="padding-left: 0px;">
+                        {title}
+                    </span>
+                    <div>
+                        <span class="date ng-binding ng-scope">
+                            {publish_time_as_datetime}: {relative_time_string} 
+                        </span>
+                    </div>
+                    <div>
+                        <span class="date ng-binding ng-scope">
+                            Market is {market_book['marketDefinition']['status']}
+                        </span>
+                    </div>
+                </div>
+                <div class="bf-col-9-24">
+                </div>
+            </div>
+        </div>
         <table class="runners-header">
             <thead>
                 <tr class="rh-line without-lay">
