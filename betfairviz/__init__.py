@@ -16637,7 +16637,7 @@ def _create_market_book_table(
         relative_time_string = f'{publish_time_as_datetime - market_time_date_as_datetime} since marketTime'
     title = market_book['marketDefinition']['eventName']
     if 'name' in market_book['marketDefinition']:
-        title += market_book['marketDefinition']['name']
+        title += ' - ' + market_book['marketDefinition']['name']
     html = f"""
         <div class="sports-header-container">
             <div class="sports">
