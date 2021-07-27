@@ -11,6 +11,7 @@ from IPython.display import HTML
 from IPython.display import Pretty
 from IPython.lib.pretty import pretty
 
+from betfairutil import calculate_book_percentage
 from betfairutil import is_market_book
 from betfairutil import is_runner_book
 
@@ -5176,33 +5177,6 @@ class Style(Enum):
     RAW = 'raw'
 
 
-def calculate_book_percentage(market_book: Dict[str, Any], is_back: bool) -> float:
-    implied_probabilities = []
-    for runner in market_book['marketDefinition']['runners']:
-        if runner['status'] == 'REMOVED':
-            continue
-        runner_book = None
-        best_price = None
-        for maybe_runner_book in market_book['runners']:
-            if maybe_runner_book['selectionId'] == runner['id']:
-                runner_book = maybe_runner_book
-                break
-        if runner_book:
-            if is_back:
-                available = runner_book.get('ex', {}).get('availableToBack', [])
-            else:
-                available = runner_book.get('ex', {}).get('availableToLay', [])
-            if available:
-                best_price = available[0]['price']
-
-        if best_price:
-            implied_probabilities.append(1.0 / best_price)
-        else:
-            implied_probabilities.append(1.0 if is_back else 0.0)
-
-    return sum(implied_probabilities)
-
-
 def _create_market_book_button(
         selection_id: int,
         market_book: Union[Dict[str, Any], MarketBook],
@@ -5278,7 +5252,7 @@ def _create_market_book_table(
                     </th>
                     <th class="rh-book-percentage rh-back-book-percentage ng-scope"
                         style="width: {DEPTH_TO_WIDTH_MAP[depth]}">
-                        {round(calculate_book_percentage(market_book, True) * 100, 1)}%
+                        {round(calculate_book_percentage(market_book, Side.BACK) * 100, 1)}%
                     </th>
                     <th class="rh-select-all-buttons rh-select-back-all-button ng-scope">
                     </th>
@@ -5286,7 +5260,7 @@ def _create_market_book_table(
                     </th>
                     <th class="rh-book-percentage rh-lay-book-percentage ng-scope"
                         style="width: {DEPTH_TO_WIDTH_MAP[depth]}">
-                        {round(calculate_book_percentage(market_book, False) * 100, 1)}%
+                        {round(calculate_book_percentage(market_book, Side.LAY) * 100, 1)}%
                     </th>
                 </tr>
             </thead>
