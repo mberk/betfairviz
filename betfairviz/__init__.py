@@ -5384,34 +5384,6 @@ def _create_runner_book_html(runner_book: Union[Dict[str, Any], RunnerBook], run
     return CSS_STYLE + _create_runner_book_table(runner_book, runner_name=runner_name)
 
 
-def _create_market_book_iframe(
-        market_book: Union[Dict[str, Any], MarketBook],
-        depth: int = 3) -> str:
-    if type(market_book) != dict:
-        market_book = market_book._data
-    return f"""
-        <iframe
-            srcdoc="{escape(_create_market_book_html(market_book, depth))}"
-            scrolling="no"
-            frameBorder="0"
-            width=100%
-            onload="this.style.height=(this.contentWindow.document.body.scrollHeight+20)+\'px\';">
-    """
-
-
-def _create_runner_book_iframe(
-        runner_book: Union[Dict[str, Any], RunnerBook],
-        runner_name: Optional[str] = None) -> str:
-    return f"""
-        <iframe
-            srcdoc="{escape(_create_runner_book_html(runner_book, runner_name=runner_name))}"
-            scrolling="no"
-            frameBorder="0"
-            width=100%
-            onload="this.style.height=(this.contentWindow.document.body.scrollHeight+20)+\'px\';">
-    """
-
-
 def visualise(
         market_book_or_runner_book: Union[Dict[str, Any], MarketBook, RunnerBook],
         depth: int = 3,
@@ -5425,7 +5397,7 @@ def visualise(
     if is_market_book(market_book_or_runner_book):
         market_book = market_book_or_runner_book
         if style is Style.DEFAULT:
-            return HTML(_create_market_book_iframe(market_book=market_book, depth=depth))
+            return HTML(_create_market_book_table(market_book=market_book, depth=depth))
         elif style is Style.RAW:
             return Pretty(pretty(market_book))
         else:
@@ -5433,7 +5405,7 @@ def visualise(
     elif is_runner_book(market_book_or_runner_book):
         runner_book = market_book_or_runner_book
         if style is Style.DEFAULT:
-            return HTML(_create_runner_book_iframe(runner_book=runner_book, runner_name=runner_name))
+            return HTML(_create_runner_book_table(runner_book=runner_book, runner_name=runner_name))
         elif style is Style.RAW:
             return Pretty(pretty(runner_book))
         else:
@@ -5447,20 +5419,20 @@ visualize = visualise
 
 def _dict_formatter(d: dict) -> str:
     if is_market_book(d):
-        return _create_market_book_iframe(d)
+        return _create_market_book_table(d)
     if is_runner_book(d):
-        return _create_runner_book_iframe(d)
+        return _create_runner_book_table(d)
 
 
 ip = get_ipython()
 if ip:
     ip.display_formatter.formatters['text/html'].for_type(
         MarketBook,
-        _create_market_book_iframe
+        _create_market_book_table
     )
     ip.display_formatter.formatters['text/html'].for_type(
         RunnerBook,
-        _create_runner_book_iframe
+        _create_runner_book_table
     )
     ip.display_formatter.formatters['text/html'].for_type(
         dict,
