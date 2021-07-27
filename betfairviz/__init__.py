@@ -4528,70 +4528,73 @@ EXAMPLE_RUNNER_BOOK = EXAMPLE_MARKET_BOOK['runners'][0]
 
 CSS_STYLE = """
 <style>
-html {
+#betfairviz * {
+  all: revert;
+}
+#betfairviz html {
   color: #000;
   background: #fff;
 }
-body,
-div,
-h3,
-td,
-th {
+#betfairviz body,
+#betfairviz div,
+#betfairviz h3,
+#betfairviz td,
+#betfairviz th {
   margin: 0;
   padding: 0;
   line-height: 1;
 }
-table {
+#betfairviz table {
   border-collapse: collapse;
   border-spacing: 0;
 }
-th {
+#betfairviz th {
   font-style: normal;
   font-weight: 400;
 }
-th {
+#betfairviz th {
   text-align: left;
 }
-h3 {
+#betfairviz h3 {
   font-size: 100%;
   font-weight: 400;
 }
-button {
+#betfairviz button {
   border-radius: 0;
 }
-.bf-row {
+#betfairviz .bf-row {
   line-height: 0;
 }
-body,
-html {
+#betfairviz body,
+#betfairviz html {
   height: 100%;
 }
-html {
+#betfairviz html {
   font-size: 62.5%;
 }
-body {
+#betfairviz body {
   font-family: Arial, Helvetica, sans-serif;
   font-size: 11px;
 }
-.marketview-list-runners-component {
+#betfairviz .marketview-list-runners-component {
   margin-bottom: 0;
   position: relative;
 }
-.marketview-list-runners-component .mv-runner-list-container {
+#betfairviz .marketview-list-runners-component .mv-runner-list-container {
   padding: 0 8px;
 }
-.marketview-list-runners-component .runner-list-wrapper {
+#betfairviz .marketview-list-runners-component .runner-list-wrapper {
   overflow-x: auto;
   overflow-y: hidden;
 }
-.marketview-list-runners-component .market-graph-container {
+#betfairviz .marketview-list-runners-component .market-graph-container {
   float: left;
   overflow: hidden;
   width: 13px;
   height: 29px;
   padding-left: 2px;
 }
-.marketview-list-runners-component .mv-runner-list {
+#betfairviz .marketview-list-runners-component .mv-runner-list {
   min-height: 1px;
   height: 100%;
   width: 100%;
@@ -4599,179 +4602,181 @@ body {
   border-spacing: 0;
   padding: 0;
 }
-.marketview-list-runners-component .bet-buttons .back,
-.marketview-list-runners-component .bet-buttons .lay {
+#betfairviz .marketview-list-runners-component .bet-buttons .back,
+#betfairviz .marketview-list-runners-component .bet-buttons .lay {
   background-color: #fff;
 }
-.marketview-list-runners-component .bet-buttons .back-selection-button {
+#betfairviz .marketview-list-runners-component .bet-buttons .back-selection-button {
   background-color: #a6d8ff;
 }
-.marketview-list-runners-component .bet-buttons .lay-selection-button {
+#betfairviz .marketview-list-runners-component .bet-buttons .lay-selection-button {
   background-color: #fac9d4;
 }
-.marketview-list-runners-component .runner-line {
+#betfairviz .marketview-list-runners-component .runner-line {
   height: 100%;
   border-bottom: 1px solid #dfdfdf;
 }
-.marketview-list-runners-component .runner-line .back,
-.marketview-list-runners-component .runner-line .lay {
+#betfairviz .marketview-list-runners-component .runner-line .back,
+#betfairviz .marketview-list-runners-component .runner-line .lay {
   border: 0;
   margin: 0;
   padding: 0;
 }
-.marketview-list-runners-component .runner-line .back,
-.marketview-list-runners-component .runner-line .lay {
+#betfairviz .marketview-list-runners-component .runner-line .back,
+#betfairviz .marketview-list-runners-component .runner-line .lay {
   width: 100%;
   height: 100%;
 }
-.marketview-list-runners-component .runner-line .back {
+#betfairviz .marketview-list-runners-component .runner-line .back {
   border-left: 1px solid #dfdfdf;
 }
-.marketview-list-runners-component .runner-line .back.back-selection-button {
+#betfairviz .marketview-list-runners-component .runner-line .back.back-selection-button {
   border-right: 1px solid #fff;
   border-left: 0;
 }
-.marketview-list-runners-component .runner-line .lay {
+#betfairviz .marketview-list-runners-component .runner-line .lay {
   border-right: 1px solid #dfdfdf;
 }
-.marketview-list-runners-component .runner-line .lay.lay-selection-button {
+#betfairviz .marketview-list-runners-component .runner-line .lay.lay-selection-button {
   border-right: 0;
 }
-.marketview-list-runners-component .runner-line .price {
+#betfairviz .marketview-list-runners-component .runner-line .price {
   font-weight: 700;
   display: block;
 }
-.marketview-list-runners-component .runner-line .size {
+#betfairviz .marketview-list-runners-component .runner-line .size {
   display: block;
 }
-.marketview-list-runners-component .runner-line .bet-buttons {
+#betfairviz .marketview-list-runners-component .runner-line .bet-buttons {
   width: 8%;
   text-align: center;
   overflow: hidden;
 }
-.marketview-list-runners-component .runner-line .back-cell,
-.marketview-list-runners-component .runner-line .lay-cell {
+#betfairviz .marketview-list-runners-component .runner-line .back-cell,
+#betfairviz .marketview-list-runners-component .runner-line .lay-cell {
   line-height: 0;
   height: 100%;
 }
-.marketview-list-runners-component .runner-line .back-cell.first-lay-cell,
-.marketview-list-runners-component .runner-line .back-cell.last-back-cell,
-.marketview-list-runners-component .runner-line .lay-cell.first-lay-cell,
-.marketview-list-runners-component .runner-line .lay-cell.last-back-cell {
+#betfairviz .marketview-list-runners-component .runner-line .back-cell.first-lay-cell,
+#betfairviz .marketview-list-runners-component .runner-line .back-cell.last-back-cell,
+#betfairviz .marketview-list-runners-component .runner-line .lay-cell.first-lay-cell,
+#betfairviz .marketview-list-runners-component .runner-line .lay-cell.last-back-cell {
   border-bottom: 1px solid #fff;
 }
-.marketview-list-runners-component .runner-line:first-child .back-cell,
-.marketview-list-runners-component .runner-line:first-child .lay-cell,
-.marketview-list-runners-component .runner-line:first-child .new-runner-info {
+#betfairviz .marketview-list-runners-component .runner-line:first-child .back-cell,
+#betfairviz .marketview-list-runners-component .runner-line:first-child .lay-cell,
+#betfairviz .marketview-list-runners-component .runner-line:first-child .new-runner-info {
   border-top: 1px solid #dfdfdf;
 }
-.marketview-list-runners-component .runner-line:last-child .back-cell.last-back-cell,
-.marketview-list-runners-component .runner-line:last-child .lay-cell.first-lay-cell {
+#betfairviz .marketview-list-runners-component .runner-line:last-child .back-cell.last-back-cell,
+#betfairviz .marketview-list-runners-component .runner-line:last-child .lay-cell.first-lay-cell {
   overflow: hidden;
   border-bottom: 1px solid #dfdfdf;
 }
-.marketview-list-runners-component .runner-line:last-child .back,
-.marketview-list-runners-component .runner-line:last-child .lay {
+#betfairviz .marketview-list-runners-component .runner-line:last-child .back,
+#betfairviz .marketview-list-runners-component .runner-line:last-child .lay {
   margin-bottom: 2px;
 }
-.marketview-list-runners-component .bet-buttons .back:hover,
-.marketview-list-runners-component .bet-buttons .lay:hover {
+#betfairviz .marketview-list-runners-component .bet-buttons .back:hover,
+#betfairviz .marketview-list-runners-component .bet-buttons .lay:hover {
   background-color: #dfdfdf;
 }
-.marketview-list-runners-component .bet-buttons .back-selection-button:hover {
+#betfairviz .marketview-list-runners-component .bet-buttons .back-selection-button:hover {
   background-color: #75c2fd;
 }
-.marketview-list-runners-component .bet-buttons .lay-selection-button:hover {
+#betfairviz .marketview-list-runners-component .bet-buttons .lay-selection-button:hover {
   background-color: #f694aa;
 }
-.marketview-list-runners-component .mv-runner-list.fixed-size .bet-buttons {
+#betfairviz .marketview-list-runners-component .mv-runner-list.fixed-size .bet-buttons {
   min-width: 60px;
 }
-.marketview-list-runners-component .runner-item {
+#betfairviz .marketview-list-runners-component .runner-item {
   margin: 0;
   border-bottom: 1px solid #dfdfdf;
 }
-.marketview-list-runners-component .runner-item:first-child {
+#betfairviz .marketview-list-runners-component .runner-item:first-child {
   margin-top: 1px;
   border-top: 1px solid #dfdfdf;
 }
-.marketview-list-runners-component .runner-item.middle .runner-data-container {
+#betfairviz .marketview-list-runners-component .runner-item.middle .runner-data-container {
   line-height: 26px;
 }
-.marketview-list-runners-component .runner-item .runner-data-container .runner-info .name {
+#betfairviz .marketview-list-runners-component .runner-item .runner-data-container .runner-info .name {
   float: none;
 }
-.marketview-list-runners-component .runner-inner-container-header-overlay,
-.marketview-list-runners-component .runner-list-overlay {
+#betfairviz .marketview-list-runners-component .runner-inner-container-header-overlay,
+#betfairviz .marketview-list-runners-component .runner-list-overlay {
   background: #fff;
 }
 @media screen and (max-width: 80em) {
-  .marketview-list-runners-component .mv-bet-button .bet-button-size,
-  .marketview-list-runners-component .size {
+  #betfairviz .marketview-list-runners-component .mv-bet-button .bet-button-size,
+  #betfairviz .marketview-list-runners-component .size {
     font-size: 10px;
   }
 }
 @media screen and (min-width: 80em) {
-  .marketview-list-runners-component .mv-bet-button .bet-button-size,
-  .marketview-list-runners-component .size {
+  #betfairviz .marketview-list-runners-component .mv-bet-button .bet-button-size,
+  #betfairviz .marketview-list-runners-component .size {
     font-size: 11px;
   }
 }
-.marketview-container .loading-wrapper {
+#betfairviz .marketview-container .loading-wrapper {
   margin-top: 70px;
 }
 @media only screen and (max-width: 1024px) {
-  .market-going-inplay {
+  #betfairviz .market-going-inplay {
     max-width: 90px;
   }
 }
 @media only screen and (max-width: 1024px), only screen and (max-width: 1279px) {
-  .bf-market-view-scroll .market-info-container {
+  #betfairviz .bf-market-view-scroll .market-info-container {
     width: 100%;
     float: left;
     padding-bottom: 5px;
   }
 }
-.marketview-list-runners-component .runner-line.loser-runner .runner-data-container,
-.marketview-list-runners-component .runner-line.winner-runner .runner-data-container {
+#betfairviz .marketview-list-runners-component .runner-line.loser-runner .runner-data-container,
+#betfairviz .marketview-list-runners-component .runner-line.winner-runner .runner-data-container {
   float: none;
 }
-.marketview-list-runners-component.market-closed .loser-runner .runner-info-container .runner-data-container,
-.marketview-list-runners-component.market-closed .loser-runner .runner-info-left-elems-container {
+#betfairviz .marketview-list-runners-component.market-closed .loser-runner .runner-info-container .runner-data-container,
+#betfairviz .marketview-list-runners-component.market-closed .loser-runner .runner-info-left-elems-container {
   -moz-opacity: 0.13;
   -khtml-opacity: 0.13;
   -webkit-opacity: 0.13;
   opacity: 0.13;
 }
-.marketview-list-runners-component .mv-runner-list .runner-line:last-child .back,
-.marketview-list-runners-component .mv-runner-list .runner-line:last-child .lay {
+#betfairviz .marketview-list-runners-component .mv-runner-list .runner-line:last-child .back,
+#betfairviz .marketview-list-runners-component .mv-runner-list .runner-line:last-child .lay {
   margin-bottom: 0;
 }
-.runners-header {
+#betfairviz .runners-header {
   margin: 5px 8px 0;
   width: calc(100% - 16px);
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 11px;
 }
-.rh-line {
+#betfairviz .rh-line {
   vertical-align: bottom;
 }
-.rh-runner-name-header {
+#betfairviz .rh-runner-name-header {
   line-height: 18px;
 }
-.rh-selections-count-label {
+#betfairviz .rh-selections-count-label {
   padding-right: 15%;
 }
-.rh-book-percentage {
+#betfairviz .rh-book-percentage {
   width: 8%;
 }
-.rh-select-all-buttons {
+#betfairviz .rh-select-all-buttons {
   width: 16%;
 }
-.rh-lay-book-percentage,
-.rh-select-back-all-button {
+#betfairviz .rh-lay-book-percentage,
+#betfairviz .rh-select-back-all-button {
   text-align: right;
 }
-.rh-back-all,
-.rh-lay-all {
+#betfairviz .rh-back-all,
+#betfairviz .rh-lay-all {
   width: 65px;
   padding: 3px 5px;
   height: 18px;
@@ -4781,41 +4786,41 @@ body {
   border: 0;
   cursor: pointer;
 }
-.rh-back-all-label,
-.rh-lay-all-label {
+#betfairviz .rh-back-all-label,
+#betfairviz .rh-lay-all-label {
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
   display: block;
 }
-.rh-back-all {
+#betfairviz .rh-back-all {
   float: right;
   margin-right: 1px;
   background-color: #a6d8ff;
 }
-.rh-back-all:hover {
+#betfairviz .rh-back-all:hover {
   background-color: #75c2fd;
 }
-.rh-back-all:focus {
+#betfairviz .rh-back-all:focus {
   outline: 0;
 }
-.rh-lay-all {
+#betfairviz .rh-lay-all {
   float: left;
   background-color: #fac9d4;
 }
-.rh-lay-all:hover {
+#betfairviz .rh-lay-all:hover {
   background-color: #f694aa;
 }
-.rh-lay-all:focus {
+#betfairviz .rh-lay-all:focus {
   outline: 0;
 }
-.rh-label-all {
+#betfairviz .rh-label-all {
   width: 16%;
   color: #7f7f7f;
   text-align: center;
 }
-.rh-label-back,
-.rh-label-lay {
+#betfairviz .rh-label-back,
+#betfairviz .rh-label-lay {
   color: #7f7f7f;
   width: calc(50% - 10px);
   padding: 3px 5px;
@@ -4824,123 +4829,123 @@ body {
   white-space: nowrap;
   overflow: hidden;
 }
-.rh-label-back {
+#betfairviz .rh-label-back {
   float: right;
   margin-right: 1px;
 }
-.rh-label-lay {
+#betfairviz .rh-label-lay {
   float: left;
 }
-.rh-label-all.is-small {
+#betfairviz .rh-label-all.is-small {
   width: 8%;
 }
-.rh-label-all.is-small .rh-label-back,
-.rh-label-all.is-small .rh-label-lay {
+#betfairviz .rh-label-all.is-small .rh-label-back,
+#betfairviz .rh-label-all.is-small .rh-label-lay {
   width: calc(100% - 10px);
   min-width: 50px;
 }
-.bf-header-visibility {
+#betfairviz .bf-header-visibility {
   display: block;
   height: 76px;
   background-color: #dfe5e5;
   padding-left: 9999px;
 }
 @media only screen and (max-width: 896px) {
-  .bf-header-visibility {
+  #betfairviz .bf-header-visibility {
     height: 103px;
   }
 }
-.sports-header-container .sports {
+#betfairviz .sports-header-container .sports {
   background: #303030;
   padding: 5px 8px 4px;
   min-height: 50px;
   position: relative;
 }
-.sports-header-container .sports .date {
+#betfairviz .sports-header-container .sports .date {
   color: #fff;
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
 }
-.sports-header-container .sports .title {
+#betfairviz .sports-header-container .sports .title {
   color: #fff;
   white-space: nowrap;
   overflow: hidden;
   font-size: 20px;
   line-height: 24px;
 }
-.sports-header-container .sports .title {
+#betfairviz .sports-header-container .sports .title {
   padding-left: 22px;
 }
-.sports-header-container .sports .date {
+#betfairviz .sports-header-container .sports .date {
   font-size: 12px;
   line-height: 18px;
   margin-top: 4px;
 }
-html {
+#betfairviz html {
   font-family: sans-serif;
   -ms-text-size-adjust: 100%;
   -webkit-text-size-adjust: 100%;
 }
-body {
+#betfairviz body {
   margin: 0;
 }
-header,
-summary {
+#betfairviz header,
+#betfairviz summary {
   display: block;
 }
-[hidden],
-template {
+#betfairviz [hidden],
+#betfairviz template {
   display: none;
 }
-a {
+#betfairviz a {
   background: 0 0;
 }
-a:active,
-a:hover {
+#betfairviz a:active,
+#betfairviz a:hover {
   outline: 0;
 }
-b {
+#betfairviz b {
   font-weight: 700;
 }
-mark {
+#betfairviz mark {
   background: #ff0;
   color: #000;
 }
-small {
+#betfairviz small {
   font-size: 80%;
 }
-button {
+#betfairviz button {
   color: inherit;
   font: inherit;
   margin: 0;
 }
-button {
+#betfairviz button {
   overflow: visible;
 }
-button {
+#betfairviz button {
   text-transform: none;
 }
-button {
+#betfairviz button {
   -webkit-appearance: button;
   cursor: pointer;
 }
-button[disabled] {
+#betfairviz button[disabled] {
   cursor: default;
 }
-button::-moz-focus-inner {
+#betfairviz button::-moz-focus-inner {
   border: 0;
   padding: 0;
 }
-table {
+#betfairviz table {
   border-collapse: collapse;
   border-spacing: 0;
 }
-td,
-th {
+#betfairviz td,
+#betfairviz th {
   padding: 0;
 }
-.bf-row {
+#betfairviz .bf-row {
   letter-spacing: -0.31em;
   text-rendering: optimizespeed;
   display: -webkit-flex;
@@ -4950,7 +4955,7 @@ th {
   margin-left: -5px;
   margin-right: -5px;
 }
-[class*="bf-col-"] {
+#betfairviz [class*="bf-col-"] {
   box-sizing: border-box;
   padding-left: 5px;
   padding-right: 5px;
@@ -4961,24 +4966,24 @@ th {
   vertical-align: top;
   text-rendering: auto;
 }
-.bf-col-9-24 {
+#betfairviz .bf-col-9-24 {
   width: 37.5%;
 }
-.bf-col-15-24 {
+#betfairviz .bf-col-15-24 {
   width: 62.5%;
 }
-.bf-col-24-24 {
+#betfairviz .bf-col-24-24 {
   width: 100%;
 }
-.mv-bet-button,
-.mv-header-container {
+#betfairviz .mv-bet-button,
+#betfairviz .mv-header-container {
   font-family: Tahoma, Verdana, Arial, sans-serif;
   font-size: 11px;
 }
-.mv-header-container .market-status .market-status-label {
+#betfairviz .mv-header-container .market-status .market-status-label {
   margin-left: 5px;
 }
-.mv-bet-button {
+#betfairviz .mv-bet-button {
   width: 100%;
   height: 100%;
   border-width: 0;
@@ -4986,7 +4991,7 @@ th {
   outline: 0;
   cursor: pointer;
 }
-.mv-bet-button.changed {
+#betfairviz .mv-bet-button.changed {
   -webkit-animation-name: highlightDefault;
   -webkit-animation-duration: 0.3s;
   -moz-animation-name: highlightDefault;
@@ -4994,37 +4999,37 @@ th {
   animation-name: highlightDefault;
   animation-duration: 0.3s;
 }
-.mv-bet-button:hover {
+#betfairviz .mv-bet-button:hover {
   background-color: #dfdfdf;
 }
-.mv-bet-button .bet-button-price,
-.mv-bet-button .bet-button-size {
+#betfairviz .mv-bet-button .bet-button-price,
+#betfairviz .mv-bet-button .bet-button-size {
   text-align: center;
   display: block;
 }
-.mv-bet-button .bet-button-price {
+#betfairviz .mv-bet-button .bet-button-price {
   font-weight: 700;
 }
-.mv-bet-button.back-selection-button {
+#betfairviz .mv-bet-button.back-selection-button {
   background-color: #a6d8ff;
 }
-.mv-bet-button.back-selection-button:hover {
+#betfairviz .mv-bet-button.back-selection-button:hover {
   background-color: #75c2fd;
 }
-.mv-bet-button.lay-selection-button {
+#betfairviz .mv-bet-button.lay-selection-button {
   background-color: #fac9d1;
 }
-.mv-bet-button.lay-selection-button:hover {
+#betfairviz .mv-bet-button.lay-selection-button:hover {
   background-color: #f694aa;
 }
-.runner-info {
+#betfairviz .runner-info {
   font-size: 11px;
   padding-right: 5px;
 }
-.runner-info .name {
+#betfairviz .runner-info .name {
   float: left;
 }
-.runner-info .runner-name {
+#betfairviz .runner-info .runner-name {
   text-overflow: ellipsis;
   -webkit-text-overflow: ellipsis;
   -o-text-overflow: ellipsis;
@@ -5032,12 +5037,12 @@ th {
   margin: 0;
   white-space: nowrap;
 }
-.runner-info .runner-name {
+#betfairviz .runner-info .runner-name {
   font-weight: 700;
   line-height: 26px;
   padding: 2px 5px 1px;
 }
-.market-graph {
+#betfairviz .market-graph {
   border: 0;
 }
 @keyframes highlightBack {
@@ -5073,7 +5078,40 @@ th {
     background-color: #fff;
   }
 }
-.ladder-table {
+#betfairviz .bf-bet-button {
+  font-family: Tahoma, Verdana, Arial, sans-serif;
+  font-size: 11px;
+  width: 100%;
+  height: 100%;
+  border-width: 0;
+  background-color: #fff;
+  outline: 0;
+  cursor: pointer;
+}
+#betfairviz .bf-bet-button:hover {
+  background-color: #dfdfdf;
+}
+#betfairviz .bf-bet-button .bet-button-price,
+#betfairviz .bf-bet-button .bet-button-size {
+  text-align: center;
+  display: block;
+}
+#betfairviz .bf-bet-button .bet-button-price {
+  font-weight: 700;
+}
+#betfairviz .bf-bet-button.back-selection-button {
+  background-color: #a6d8ff;
+}
+#betfairviz .bf-bet-button.back-selection-button:hover {
+  background-color: #75c2fd;
+}
+#betfairviz .bf-bet-button.lay-selection-button {
+  background-color: #fac9d1;
+}
+#betfairviz .bf-bet-button.lay-selection-button:hover {
+  background-color: #f694aa;
+}
+#betfairviz .ladder-table {
   display: block;
   border-collapse: collapse;
   overflow-y: auto;
@@ -5082,45 +5120,45 @@ th {
   border: 1px solid #F0F1F5;
   font: normal normal normal 12px "Arial", "sans-serif";
 }
-.ladder-table thead {
+#betfairviz .ladder-table thead {
   display: table;
   width: 100%;
 }
-.ladder-table th {
+#betfairviz .ladder-table th {
   height: 18px;
   padding: 5px;
   text-align: center;
   font: normal normal bold 12px "Arial", "sans-serif";
 }
-.ladder-table .titles th {
+#betfairviz .ladder-table .titles th {
   background-color: #F0F1F5;
 }
-.ladder-table tbody tr {
+#betfairviz .ladder-table tbody tr {
   display: table;
   width: 100%;
   table-layout: fixed;
 }
-.ladder-table td {
+#betfairviz .ladder-table td {
   padding: 5px;
   font: normal normal normal 12px "Arial", "sans-serif";
   border: 1px solid #DFDFDf;
   border-bottom: 0;
   height: 14px;
 }
-.ladder-table .item td .price {
+#betfairviz .ladder-table .item td .price {
   text-align: left;
 }
-.ladder-table .item td.price.back-color,
-.ladder-table .item td.back.back-color {
+#betfairviz .ladder-table .item td.price.back-color,
+#betfairviz .ladder-table .item td.back.back-color {
   background-color: #A6D8FF;
 }
-.ladder-table .item td.price.lay-color,
-.ladder-table .item td.lay.lay-color {
+#betfairviz .ladder-table .item td.price.lay-color,
+#betfairviz .ladder-table .item td.lay.lay-color {
   background-color: #FAC9D1;
 }
-.ladder-table .item td.back,
-.ladder-table .item td.lay,
-.ladder-table .item td.traded {
+#betfairviz .ladder-table .item td.back,
+#betfairviz .ladder-table .item td.lay,
+#betfairviz .ladder-table .item td.traded {
   text-align: right;
 }
 </style>
@@ -5208,6 +5246,7 @@ def _create_market_book_table(
     if 'name' in market_book['marketDefinition']:
         title += ' - ' + market_book['marketDefinition']['name']
     html = f"""
+        <div id="betfairviz">
         <div class="sports-header-container">
             <div class="sports">
                 <div class="bf-col-15-24">
@@ -5284,7 +5323,7 @@ def _create_market_book_table(
             html += _create_market_book_button(runner['id'], market_book, 'lay', i)
             html += '</td>'
         html += '</tr>'
-    html += '</table></div></div>'
+    html += '</table></div></div></div>'
     return html
 
 
@@ -5302,31 +5341,33 @@ def _create_runner_book_table(runner_book: Union[Dict[str, Any], RunnerBook], ru
     title = selection_id if runner_name is None else runner_name
     all_prices = sorted(set(itertools.chain(price_to_atb.keys(), price_to_atl.keys(), price_to_trd.keys())))
     html = f"""
-    <table class="ladder-table" cellspacing="0">
-        <thead>
-            <tr class="titles">
-                <th class="exchange-traded ng-scope" colspan=4>{title}</th>
-            </tr>
-            <tr class="headers">
-                <th class="price ng-scope">Price</th>
-                <th class="back ng-scope">To Back</th>
-                <th class="lay ng-scope">To Lay</th>
-                <th class="trader ng-scope">Traded</th>
-            </tr>
-        </thead>
-        <tbody>"""
+    <div id="betfairviz">
+        <table class="ladder-table" cellspacing="0">
+            <thead>
+                <tr class="titles">
+                    <th class="exchange-traded ng-scope" colspan=4>{title}</th>
+                </tr>
+                <tr class="headers">
+                    <th class="price ng-scope">Price</th>
+                    <th class="back ng-scope">To Back</th>
+                    <th class="lay ng-scope">To Lay</th>
+                    <th class="trader ng-scope">Traded</th>
+                </tr>
+            </thead>
+            <tbody>"""
     for price in all_prices:
         html += f"""
-            <tr class="item ng-scope">
-            <td class="price{' back-color' if price in price_to_atb else ' lay-color' if price in price_to_atl else ''}">{round(price, 2)}</td>
-            <td class="back{' back-color' if price in price_to_atb else ''}">{price_to_atb.get(price, '')}</td>
-            <td class="lay{' lay-color' if price in price_to_atl else ''}">{price_to_atl.get(price, '')}</td>
-            <td class="traded">{price_to_trd.get(price, '')}</td>
-            </tr>
+                <tr class="item ng-scope">
+                <td class="price{' back-color' if price in price_to_atb else ' lay-color' if price in price_to_atl else ''}">{round(price, 2)}</td>
+                <td class="back{' back-color' if price in price_to_atb else ''}">{price_to_atb.get(price, '')}</td>
+                <td class="lay{' lay-color' if price in price_to_atl else ''}">{price_to_atl.get(price, '')}</td>
+                <td class="traded">{price_to_trd.get(price, '')}</td>
+                </tr>
         """
     html += """
-        </tbody>
-    </table>
+            </tbody>
+        </table>
+    </div>
     """
     return html
 
