@@ -11,6 +11,7 @@ from IPython.display import Pretty
 from IPython.lib.pretty import pretty
 
 from betfairutil import calculate_book_percentage
+from betfairutil import get_runner_book_from_market_book
 from betfairutil import is_market_book
 from betfairutil import is_runner_book
 from betfairutil import Side
@@ -5180,21 +5181,14 @@ class Style(Enum):
 def _create_market_book_button(
         selection_id: int,
         market_book: Union[Dict[str, Any], MarketBook],
-        side: str,
+        side: Side,
         depth: int) -> str:
     if type(market_book) != dict:
         market_book = market_book._data
-    html = f'<button class="{side} mv-bet-button ng-isolate-scope {side}{"-selection" if depth == 0 else ""}-button">'
-    runner_book = None
-    for r in market_book['runners']:
-        if r['selectionId'] == selection_id:
-            runner_book = r
-            break
+    html = f'<button class="{side.value.lower()} mv-bet-button ng-isolate-scope {side.value.lower()}{"-selection" if depth == 0 else ""}-button">'
+    runner_book = get_runner_book_from_market_book(market_book, selection_id=selection_id, return_type=dict)
     if runner_book:
-        if side == 'back':
-            available = runner_book.get('ex', {}).get('availableToBack', [])
-        else:
-            available = runner_book.get('ex', {}).get('availableToLay', [])
+        available = runner_book.get('ex', {}).get(side.ex_key, [])
         if len(available) >= depth + 1:
             html += f'<span class="bet-button-price">{round(available[depth]["price"], 2)}</span>'
             html += f'<span class="bet-button-size">£{round(available[depth]["size"], 2)}</span>'
@@ -5290,11 +5284,11 @@ def _create_market_book_table(
         """
         for i in range(depth - 1, -1, -1):
             html += '<td class="bet-buttons">'
-            html += _create_market_book_button(runner['id'], market_book, 'back', i)
+            html += _create_market_book_button(runner['id'], market_book, Side.BACK, i)
             html += '</td>'
         for i in range(depth):
             html += '<td class="bet-buttons">'
-            html += _create_market_book_button(runner['id'], market_book, 'lay', i)
+            html += _create_market_book_button(runner['id'], market_book, Side.LAY, i)
             html += '</td>'
         html += '</tr>'
     html += '</table></div></div></div>'
