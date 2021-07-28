@@ -5371,7 +5371,7 @@ def visualise(
     if is_market_book(market_book_or_runner_book):
         market_book = market_book_or_runner_book
         if style is Style.DEFAULT:
-            return HTML(_create_market_book_table(market_book=market_book, depth=depth))
+            return HTML(_create_market_book_html(market_book=market_book, depth=depth))
         elif style is Style.RAW:
             return Pretty(pretty(market_book))
         else:
@@ -5379,7 +5379,7 @@ def visualise(
     elif is_runner_book(market_book_or_runner_book):
         runner_book = market_book_or_runner_book
         if style is Style.DEFAULT:
-            return HTML(_create_runner_book_table(runner_book=runner_book, runner_name=runner_name))
+            return HTML(_create_runner_book_html(runner_book=runner_book, runner_name=runner_name))
         elif style is Style.RAW:
             return Pretty(pretty(runner_book))
         else:
@@ -5393,20 +5393,20 @@ visualize = visualise
 
 def _dict_formatter(d: dict) -> str:
     if is_market_book(d):
-        return _create_market_book_table(d)
+        return _create_market_book_html(d)
     if is_runner_book(d):
-        return _create_runner_book_table(d)
+        return _create_runner_book_html(d)
 
 
 ip = get_ipython()
 if ip:
     ip.display_formatter.formatters['text/html'].for_type(
         MarketBook,
-        _create_market_book_table
+        _create_market_book_html
     )
     ip.display_formatter.formatters['text/html'].for_type(
         RunnerBook,
-        _create_runner_book_table
+        _create_market_book_html
     )
     ip.display_formatter.formatters['text/html'].for_type(
         dict,
