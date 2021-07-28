@@ -5,7 +5,8 @@ with open('README.md', 'r') as f:
 
 requires = [
     'betfairlightweight',
-    'betfairutil'
+    'betfairutil',
+    'ipywidgets'
 ]
 
 setup(
