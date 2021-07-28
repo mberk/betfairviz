@@ -1,20 +1,27 @@
 import datetime
 import itertools
+from copy import deepcopy
 from enum import Enum
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
+import ipywidgets as widgets
+import plotly.graph_objects as go
 from betfairlightweight.resources.bettingresources import MarketBook
 from betfairlightweight.resources.bettingresources import RunnerBook
 from IPython import get_ipython
+from IPython.display import display
 from IPython.display import HTML
 from IPython.display import Pretty
 from IPython.lib.pretty import pretty
 
+from betfairutil import calculate_market_book_diff
 from betfairutil import calculate_book_percentage
 from betfairutil import calculate_total_matched
 from betfairutil import get_runner_book_from_market_book
 from betfairutil import is_market_book
 from betfairutil import is_runner_book
+from betfairutil import MarketBookDiff
+from betfairutil import read_prices_file
 from betfairutil import Side
 
 EXAMPLE_MARKET_BOOK = {
@@ -5253,6 +5260,75 @@ class Style(Enum):
     RAW = 'raw'
 
 
+def _create_market_book_diff_button(selection_id: int, market_book: Union[Dict[str, Any]], diff: MarketBookDiff, side: Side, depth: int) -> str:
+    runner_book = get_runner_book_from_market_book(market_book, selection_id=selection_id, return_type=dict)
+    html = f'<button class="{side.value.lower()} mv-bet-button ng-isolate-scope {side.value.lower()}{"-selection" if depth == 0 else ""}-button">'
+
+    size_changes = diff.get_size_changes(selection_id=selection_id, ex_key=side.ex_key)
+    if runner_book and size_changes:
+        available = runner_book.get('ex', {}).get(side.ex_key, [])
+        if len(available) >= depth + 1:
+            price = available[depth]['price']
+            size_change = size_changes.get(price)
+            if size_change:
+                html += f'<span class="bet-button-price">{round(available[depth]["price"], 2)}</span>'
+                html += f'<span class="bet-button-size">£{round(size_change, 2)}</span>'
+    html += '</button>'
+    return html
+
+
+def _create_market_book_diff_table(
+        market_book: Union[Dict[str, Any], MarketBook],
+        diff: MarketBookDiff,
+        depth: int = 3) -> str:
+    if type(market_book) != dict:
+        market_book = market_book._data
+    html = f"""
+        <div id="betfairviz">
+        <table class="runners-header">
+            <thead>
+                <tr class="rh-line without-lay">
+                    <th>Streaming Updates</th>
+                </tr>
+            </thead>
+        </table>
+    """
+    html += """
+        <div class="marketview-list-runners-component bf-row"><div class="runners-container bf-col-24-24">
+        <table class="mv-runner-list">
+    """
+    for runner in market_book['marketDefinition']['runners']:
+        is_non_runner = runner['status'] == 'REMOVED'
+        runner_name = runner['name'] if 'name' in runner else runner['id']
+        html += ''
+        html += f"""
+        <tr class="runner-line ng-scope">
+            <td class="runner-data-container without-race-card-info">
+                <div class="market-graph-container"></div>
+                <div>
+                    <div class="runner-info">
+                        <div class="default name ng-scope">
+                            <h3 class="runner-name ng-binding">
+                                {runner_name}{' - Non Runner' if is_non_runner else ''}
+                            </h3>
+                        </div>
+                    </div>
+                </div>
+            </td>
+        """
+        for i in range(depth - 1, -1, -1):
+            html += '<td class="bet-buttons">'
+            html += _create_market_book_diff_button(runner['id'], market_book, diff, Side.BACK, i)
+            html += '</td>'
+        for i in range(depth):
+            html += '<td class="bet-buttons">'
+            html += _create_market_book_diff_button(runner['id'], market_book, diff, Side.LAY, i)
+            html += '</td>'
+        html += '</tr>'
+    html += '</table></div></div></div>'
+    return html
+
+
 def _create_market_book_button(
         selection_id: int,
         market_book: Union[Dict[str, Any], MarketBook],
@@ -5468,6 +5544,160 @@ def _create_market_book_html(
 
 def _create_runner_book_html(runner_book: Union[Dict[str, Any], RunnerBook], runner_name: Optional[str] = None) -> str:
     return CSS_STYLE + _create_runner_book_table(runner_book, runner_name=runner_name)
+
+
+def create_dashboard(market_books_or_path_to_prices_file: Union[str, List[Union[Dict[str, Any]]]]) -> widgets.Widget:
+    if type(market_books_or_path_to_prices_file) is str:
+        path_to_prices_file = market_books_or_path_to_prices_file
+        market_books = read_prices_file(path_to_prices_file)
+    else:
+        market_books = market_books_or_path_to_prices_file
+
+    in_play_index = None
+    back_book_percentages = []
+    lay_book_percentages = []
+    publish_times = []
+    for index, market_book in enumerate(market_books):
+        in_play = market_book['inplay'] if type(market_book) is dict else market_book.inplay
+        if in_play_index is None and in_play:
+            in_play_index = index
+        back_book_percentages.append(calculate_book_percentage(market_book, Side.BACK))
+        lay_book_percentages.append(calculate_book_percentage(market_book, Side.LAY))
+        publish_times.append(datetime.datetime.utcfromtimestamp(market_book['publishTime'] / 1000).replace(tzinfo=datetime.timezone.utc))
+    max_back_book_percentage = max(back_book_percentages)
+
+    def f(i, depth, show_streaming_updates, show_wiped_out_prices, show_book_percentage_graph):
+        step_backward_button.disabled = play.value == 0
+        step_forward_button.disabled = play.value == len(market_books) - 1
+        if show_wiped_out_prices:
+            new_market_book = deepcopy(market_books[i] if type(market_books[i]) is dict else market_books[i]._data) # TODO: fix
+            for runner in new_market_book['runners']:
+                for side in Side:
+                    current_prices = {price_size['price'] for price_size in runner['ex'][side.ex_key]}
+                    previous_prices = {
+                        price_size['price']
+                        for price_size in get_runner_book_from_market_book(
+                            market_books[i-1],
+                            selection_id=runner['selectionId'],
+                            return_type=dict
+                        )['ex'][side.ex_key]
+                    }
+                    for wiped_out_price in previous_prices.difference(current_prices):
+                        runner['ex'][side.ex_key].append({'price': wiped_out_price, 'size': 0})
+                    runner['ex'][side.ex_key] = sorted(runner['ex'][side.ex_key], key=lambda price_size: price_size['price'], reverse=side is Side.BACK)
+        else:
+            new_market_book = market_books[i]
+        html = _create_market_book_html(new_market_book, depth=depth)
+        if show_streaming_updates:
+            if i > 0:
+                diff = calculate_market_book_diff(new_market_book, market_books[i-1])
+            else:
+                diff = calculate_market_book_diff(new_market_book, market_books[i])
+            html += _create_market_book_diff_table(new_market_book, diff, depth=depth)
+
+        display(HTML(html))
+        if show_book_percentage_graph:
+            fig.data[2]['x'] = [publish_times[play.value], publish_times[play.value]]
+            fig_box.layout.display = fig_box_original_display
+        else:
+            fig_box.layout.display = 'none'
+
+    def go_to_in_play(_):
+        if in_play_index is not None:
+            play.value = in_play_index
+
+    def step_backward(_):
+        if play.value > 0:
+            play.value = play.value - 1
+        step_backward_button.disabled = play.value == 0
+        step_forward_button.disabled = False
+
+    def step_forward(_):
+        if play.value < len(market_books) - 1:
+            play.value = play.value + 1
+        step_backward_button.disabled = False
+        step_forward_button.disabled = play.value == len(market_books) - 1
+
+    def fig_on_click(trace, points, selector):
+        play.value = points.point_inds[0]
+
+    play = widgets.Play(min=0, max=len(market_books) - 1)
+    slider = widgets.IntSlider(min=0, max=len(market_books) - 1)
+    in_play_button = widgets.Button(description='Go to In Play', disabled=in_play_index is None)
+    in_play_button.on_click(go_to_in_play)
+    step_backward_button = widgets.Button(disabled=True, icon='step-backward')
+    step_backward_button.on_click(step_backward)
+    step_forward_button = widgets.Button(disabled=False, icon='step-forward')
+    step_forward_button.on_click(step_forward)
+    show_streaming_updates_button = widgets.ToggleButton(description='Show streaming updates', value=False)
+    show_wiped_out_prices_button = widgets.ToggleButton(description='Show wiped out prices', value=False)
+    show_book_percentage_graph_button = widgets.ToggleButton(description='Show book percentage graph', value=False)
+    depth_slider = widgets.IntSlider(description='Depth', min=3, max=5, value=3)
+    widgets.jslink((play, 'value'), (slider, 'value'))
+    fig = go.FigureWidget(data=[
+        {
+            'x': publish_times,
+            'y': back_book_percentages,
+            'line': {
+                'color': '#a6d8ff'
+            },
+            'name': 'Back Book Percentage'
+        },
+        {
+            'x': publish_times,
+            'y': lay_book_percentages,
+            'line': {
+                'color': '#fac9d4'
+            },
+            'name': 'Lay Book Percentage'
+        },
+        {
+            'x': [publish_times[play.value], publish_times[play.value]],
+            'y': [0, max_back_book_percentage + 0.2],
+            'mode': 'lines',
+            'name': 'Current publishTime',
+            'hoverinfo': 'x',
+            'line': {
+                'width': 1,
+                'dash': 'dash',
+                'color': '#000000'
+            }
+        }
+    ], layout={
+        'xaxis': {
+            'showspikes': True,
+            'spikedash': 'solid',
+            'spikemode': 'across',
+            'spikecolor': '#000000',
+            'spikethickness': 1
+        },
+        'hovermode': 'x',
+        'spikedistance': -1,
+        'hoverdistance': -1,
+        'uirevision': True
+    })
+    fig_box = widgets.VBox([fig])
+    fig_box_original_display = fig_box.layout.display
+    fig.data[0].on_click(fig_on_click)
+    out = widgets.interactive_output(
+        f,
+        {
+            'i': play,
+            'depth': depth_slider,
+            'show_streaming_updates': show_streaming_updates_button,
+            'show_wiped_out_prices': show_wiped_out_prices_button,
+            'show_book_percentage_graph': show_book_percentage_graph_button
+        }
+    )
+
+    return widgets.VBox(
+        [
+            widgets.HBox([play, slider, step_backward_button, step_forward_button, in_play_button, depth_slider]),
+            widgets.HBox([show_streaming_updates_button, show_wiped_out_prices_button, show_book_percentage_graph_button]),
+            out,
+            fig_box
+        ]
+    )
 
 
 def visualise(
