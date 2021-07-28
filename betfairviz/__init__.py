@@ -1,7 +1,6 @@
 import datetime
 import itertools
 from enum import Enum
-from html import escape
 from typing import Any, Dict, Optional, Union
 
 from betfairlightweight.resources.bettingresources import MarketBook
