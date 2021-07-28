@@ -14,6 +14,7 @@ from IPython.lib.pretty import pretty
 from betfairutil import calculate_book_percentage
 from betfairutil import is_market_book
 from betfairutil import is_runner_book
+from betfairutil import Side
 
 EXAMPLE_MARKET_BOOK = {
     'betDelay': 1,
