@@ -5210,9 +5210,18 @@ def _create_market_book_table(
         relative_time_string = f'{market_time_date_as_datetime - publish_time_as_datetime} until marketTime'
     else:
         relative_time_string = f'{publish_time_as_datetime - market_time_date_as_datetime} since marketTime'
-    title = market_book['marketDefinition']['eventName']
-    if 'name' in market_book['marketDefinition']:
-        title += ' - ' + market_book['marketDefinition']['name']
+    if 'eventName' in market_book['marketDefinition']:
+        title = market_book['marketDefinition']['eventName']
+        if 'name' in market_book['marketDefinition']:
+            title += ' - ' + market_book['marketDefinition']['name']
+    else:  # handle self recorded data
+        title = "{0} {1:%d}{2} {1:%b} - {3}".format(
+            market_book['marketDefinition']['venue'] if 'venue' in market_book['marketDefinition'] else
+            market_book["marketId"],
+            market_time_date_as_datetime,
+            'trnshddt'[0xc0006c000000006c >> 2 * market_time_date_as_datetime.day & 3::4],
+            market_book['marketDefinition']['marketType'].replace("_", " ").title(),
+        )
     html = f"""
         <div id="betfairviz">
         <div class="sports-header-container">
@@ -5266,6 +5275,7 @@ def _create_market_book_table(
     """
     for runner in market_book['marketDefinition']['runners']:
         is_non_runner = runner['status'] == 'REMOVED'
+        runner_name = runner['name'] if 'name' in runner else runner['id']
         html += ''
         html += f"""
         <tr class="runner-line ng-scope">
@@ -5275,7 +5285,7 @@ def _create_market_book_table(
                     <div class="runner-info">
                         <div class="default name ng-scope">
                             <h3 class="runner-name ng-binding">
-                                {runner['name']}{' - Non Runner' if is_non_runner else ''}
+                                {runner_name}{' - Non Runner' if is_non_runner else ''}
                             </h3>
                         </div>
                     </div>
