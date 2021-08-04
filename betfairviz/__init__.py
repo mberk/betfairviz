@@ -5204,12 +5204,12 @@ def _create_market_book_table(
         market_book = market_book._data
     selection_count = sum(1 for r in market_book['marketDefinition']['runners'] if r['status'] != 'REMOVED')
     publish_time_as_datetime = datetime.datetime.utcfromtimestamp(market_book['publishTime'] / 1000)
-    market_time_date_as_datetime = datetime.datetime.strptime(market_book['marketDefinition']['marketTime'], '%Y-%m-%dT%H:%M:%S.%fZ')
+    market_time_as_datetime = datetime.datetime.strptime(market_book['marketDefinition']['marketTime'], '%Y-%m-%dT%H:%M:%S.%fZ')
 
-    if publish_time_as_datetime < market_time_date_as_datetime:
-        relative_time_string = f'{market_time_date_as_datetime - publish_time_as_datetime} until marketTime'
+    if publish_time_as_datetime < market_time_as_datetime:
+        relative_time_string = f'{market_time_as_datetime - publish_time_as_datetime} until marketTime'
     else:
-        relative_time_string = f'{publish_time_as_datetime - market_time_date_as_datetime} since marketTime'
+        relative_time_string = f'{publish_time_as_datetime - market_time_as_datetime} since marketTime'
     if 'eventName' in market_book['marketDefinition']:
         title = market_book['marketDefinition']['eventName']
         if 'name' in market_book['marketDefinition']:
@@ -5218,8 +5218,8 @@ def _create_market_book_table(
         title = "{0} {1:%d}{2} {1:%b} - {3}".format(
             market_book['marketDefinition']['venue'] if 'venue' in market_book['marketDefinition'] else
             market_book["marketId"],
-            market_time_date_as_datetime,
-            'trnshddt'[0xc0006c000000006c >> 2 * market_time_date_as_datetime.day & 3::4],
+            market_time_as_datetime,
+            'trnshddt'[0xc0006c000000006c >> 2 * market_time_as_datetime.day & 3::4],
             market_book['marketDefinition']['marketType'].replace("_", " ").title(),
         )
     html = f"""
