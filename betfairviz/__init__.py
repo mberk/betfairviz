@@ -5280,7 +5280,8 @@ def _create_market_book_diff_button(selection_id: int, market_book: Union[Dict[s
 def _create_market_book_diff_table(
         market_book: Union[Dict[str, Any], MarketBook],
         diff: MarketBookDiff,
-        depth: int = 3) -> str:
+        depth: int = 3,
+        show_runner_names: bool = True) -> str:
     if type(market_book) != dict:
         market_book = market_book._data
     html = f"""
@@ -5299,7 +5300,12 @@ def _create_market_book_diff_table(
     """
     for runner in market_book['marketDefinition']['runners']:
         is_non_runner = runner['status'] == 'REMOVED'
-        runner_name = runner['name'] if 'name' in runner else runner['id']
+        tokens = [str(runner['id'])]
+        if show_runner_names and 'name' in runner:
+            tokens.append(runner['name'])
+        if is_non_runner:
+            tokens.append('Non Runner')
+        runner_name = ' - '.join(tokens)
         html += ''
         html += f"""
         <tr class="runner-line ng-scope">
@@ -5309,7 +5315,7 @@ def _create_market_book_diff_table(
                     <div class="runner-info">
                         <div class="default name ng-scope">
                             <h3 class="runner-name ng-binding">
-                                {runner_name}{' - Non Runner' if is_non_runner else ''}
+                                {runner_name}
                             </h3>
                         </div>
                     </div>
@@ -5566,7 +5572,13 @@ def create_dashboard(market_books_or_path_to_prices_file: Union[str, List[Union[
         publish_times.append(datetime.datetime.utcfromtimestamp(market_book['publishTime'] / 1000).replace(tzinfo=datetime.timezone.utc))
     max_back_book_percentage = max(back_book_percentages)
 
-    def f(i, depth, show_streaming_updates, show_wiped_out_prices, show_book_percentage_graph):
+    def f(
+            i,
+            depth,
+            show_streaming_updates,
+            show_wiped_out_prices,
+            show_book_percentage_graph,
+            show_runner_names):
         step_backward_button.disabled = play.value == 0
         step_forward_button.disabled = play.value == len(market_books) - 1
         if show_wiped_out_prices:
@@ -5587,13 +5599,18 @@ def create_dashboard(market_books_or_path_to_prices_file: Union[str, List[Union[
                     runner['ex'][side.ex_key] = sorted(runner['ex'][side.ex_key], key=lambda price_size: price_size['price'], reverse=side is Side.BACK)
         else:
             new_market_book = market_books[i]
-        html = _create_market_book_html(new_market_book, depth=depth)
+        html = _create_market_book_html(new_market_book, depth=depth, show_runner_names=show_runner_names)
         if show_streaming_updates:
             if i > 0:
                 diff = calculate_market_book_diff(new_market_book, market_books[i-1])
             else:
                 diff = calculate_market_book_diff(new_market_book, market_books[i])
-            html += _create_market_book_diff_table(new_market_book, diff, depth=depth)
+            html += _create_market_book_diff_table(
+                new_market_book,
+                diff,
+                depth=depth,
+                show_runner_names=show_runner_names
+            )
 
         display(HTML(html))
         if show_book_percentage_graph:
@@ -5629,9 +5646,29 @@ def create_dashboard(market_books_or_path_to_prices_file: Union[str, List[Union[
     step_backward_button.on_click(step_backward)
     step_forward_button = widgets.Button(disabled=False, icon='step-forward')
     step_forward_button.on_click(step_forward)
-    show_streaming_updates_button = widgets.ToggleButton(description='Show streaming updates', value=False)
-    show_wiped_out_prices_button = widgets.ToggleButton(description='Show wiped out prices', value=False)
-    show_book_percentage_graph_button = widgets.ToggleButton(description='Show book percentage graph', value=False)
+
+    toggle_button_layout = widgets.Layout(width='180px')
+    show_streaming_updates_button = widgets.ToggleButton(
+        description='Show streaming updates',
+        value=False,
+        layout=toggle_button_layout
+    )
+    show_wiped_out_prices_button = widgets.ToggleButton(
+        description='Show wiped out prices',
+        value=False,
+        layout=toggle_button_layout
+    )
+    show_book_percentage_graph_button = widgets.ToggleButton(
+        description='Show book percentage graph',
+        value=False,
+        layout=toggle_button_layout
+    )
+    show_runner_names_button = widgets.ToggleButton(
+        value=True,
+        description='Show runner names',
+        layout=toggle_button_layout
+    )
+
     depth_slider = widgets.IntSlider(description='Depth', min=3, max=5, value=3)
     widgets.jslink((play, 'value'), (slider, 'value'))
     fig = go.FigureWidget(data=[
@@ -5684,6 +5721,7 @@ def create_dashboard(market_books_or_path_to_prices_file: Union[str, List[Union[
         {
             'i': play,
             'depth': depth_slider,
+            'show_runner_names': show_runner_names_button,
             'show_streaming_updates': show_streaming_updates_button,
             'show_wiped_out_prices': show_wiped_out_prices_button,
             'show_book_percentage_graph': show_book_percentage_graph_button
@@ -5692,8 +5730,24 @@ def create_dashboard(market_books_or_path_to_prices_file: Union[str, List[Union[
 
     return widgets.VBox(
         [
-            widgets.HBox([play, slider, step_backward_button, step_forward_button, in_play_button, depth_slider]),
-            widgets.HBox([show_streaming_updates_button, show_wiped_out_prices_button, show_book_percentage_graph_button]),
+            widgets.HBox(
+                [
+                    play,
+                    slider,
+                    step_backward_button,
+                    step_forward_button,
+                    in_play_button,
+                    depth_slider
+                ]
+            ),
+            widgets.HBox(
+                [
+                    show_runner_names_button,
+                    show_streaming_updates_button,
+                    show_wiped_out_prices_button,
+                    show_book_percentage_graph_button
+                ]
+            ),
             out,
             fig_box
         ]
