@@ -5199,7 +5199,8 @@ def _create_market_book_button(
 
 def _create_market_book_table(
         market_book: Union[Dict[str, Any], MarketBook],
-        depth: int = 3) -> str:
+        depth: int = 3,
+        show_runner_names: bool = True) -> str:
     if type(market_book) != dict:
         market_book = market_book._data
     selection_count = sum(1 for r in market_book['marketDefinition']['runners'] if r['status'] != 'REMOVED')
@@ -5272,7 +5273,12 @@ def _create_market_book_table(
     """
     for runner in market_book['marketDefinition']['runners']:
         is_non_runner = runner['status'] == 'REMOVED'
-        runner_name = runner['name'] if 'name' in runner else runner['id']
+        tokens = [str(runner['id'])]
+        if show_runner_names and 'name' in runner:
+            tokens.append(runner['name'])
+        if is_non_runner:
+            tokens.append('Non Runner')
+        runner_name = ' - '.join(tokens)
         html += ''
         html += f"""
         <tr class="runner-line ng-scope">
@@ -5282,7 +5288,7 @@ def _create_market_book_table(
                     <div class="runner-info">
                         <div class="default name ng-scope">
                             <h3 class="runner-name ng-binding">
-                                {runner_name}{' - Non Runner' if is_non_runner else ''}
+                                {runner_name}
                             </h3>
                         </div>
                     </div>
@@ -5349,10 +5355,11 @@ def _create_runner_book_table(runner_book: Union[Dict[str, Any], RunnerBook], ru
 
 def _create_market_book_html(
         market_book: Union[Dict[str, Any], MarketBook],
-        depth: int = 3) -> str:
+        depth: int = 3,
+        show_runner_names: bool = True) -> str:
     if type(market_book) != dict:
         market_book = market_book._data
-    return CSS_STYLE + _create_market_book_table(market_book, depth)
+    return CSS_STYLE + _create_market_book_table(market_book, depth=depth, show_runner_names=show_runner_names)
 
 
 def _create_runner_book_html(runner_book: Union[Dict[str, Any], RunnerBook], runner_name: Optional[str] = None) -> str:
@@ -5362,6 +5369,7 @@ def _create_runner_book_html(runner_book: Union[Dict[str, Any], RunnerBook], run
 def visualise(
         market_book_or_runner_book: Union[Dict[str, Any], MarketBook, RunnerBook],
         depth: int = 3,
+        show_runner_names: bool = True,
         runner_name: Optional[str] = None,
         style: Union[str, Style] = Style.DEFAULT) -> Union[HTML, Pretty]:
     if (5 < depth) or (depth < 3):
@@ -5372,7 +5380,9 @@ def visualise(
     if is_market_book(market_book_or_runner_book):
         market_book = market_book_or_runner_book
         if style is Style.DEFAULT:
-            return HTML(_create_market_book_html(market_book=market_book, depth=depth))
+            return HTML(
+                _create_market_book_html(market_book=market_book, depth=depth, show_runner_names=show_runner_names)
+            )
         elif style is Style.RAW:
             return Pretty(pretty(market_book))
         else:
