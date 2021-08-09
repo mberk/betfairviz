@@ -5272,12 +5272,13 @@ def _create_market_book_table(
         <table class="mv-runner-list">
     """
     for runner in market_book['marketDefinition']['runners']:
-        is_non_runner = runner['status'] == 'REMOVED'
         tokens = [str(runner['id'])]
         if show_runner_names and 'name' in runner:
             tokens.append(runner['name'])
-        if is_non_runner:
+        if runner['status'] == 'REMOVED':
             tokens.append('Non Runner')
+        elif runner['status'] == 'WINNER':
+            tokens.append('Winner')
         runner_name = ' - '.join(tokens)
         html += ''
         html += f"""
