@@ -4696,7 +4696,8 @@ CSS_STYLE = """
   margin: 0;
   border-bottom: 1px solid #dfdfdf;
 }
-#betfairviz .marketview-list-runners-component .runner-item:first-child {
+#betfairviz .marketview-list-runners-component .runner-item:first-child,
+#betfairviz .marketview-list-runners-component .runner-line:first-child {
   margin-top: 1px;
   border-top: 1px solid #dfdfdf;
 }
