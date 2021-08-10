@@ -5164,8 +5164,81 @@ CSS_STYLE = """
 #betfairviz .ladder-table .item td.traded {
   text-align: right;
 }
+#betfairviz .mv-header-container .total-matched,
+#betfairviz .mv-header-container .total-matched-label {
+  font-family: Tahoma, Verdana, Arial, sans-serif;
+  font-size: 11px;
+  color: #273a47;
+  white-space: nowrap;
+}
+#betfairviz .mv-header-container .total-matched-label {
+  padding: 3px;
+}
+#betfairviz .mv-header-container .total-matched {
+  font-weight: 700;
+  margin-right: 5px;
+}
+#betfairviz .mv-header-container .mv-header-total-matched-wrapper {
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-flow: row nowrap;
+  flex-flow: row nowrap;
+  -ms-flex-align: center;
+  align-items: center;
+}
+#betfairviz .mv-header-container
+  .mv-header-content
+  .mv-header-main-section-wrapper {
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-flow: row wrap;
+  flex-flow: row wrap;
+  -ms-flex-align: center;
+  align-items: center;
+  margin-right: 8px;
+}
+#betfairviz .mv-header-container .mv-secondary-section {
+  -ms-flex-item-align: start;
+  align-self: flex-start;
+  -ms-flex: none;
+  flex: none;
+}
+#betfairviz .mv-header-container .mv-header-content {
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-flow: row nowrap;
+  flex-flow: row nowrap;
+  -ms-flex-align: center;
+  align-items: center;
+  -ms-flex-pack: justify;
+  justify-content: space-between;
+  width: 100%;
+}
+#betfairviz .mv-header-container .mv-header-field {
+  line-height: 16px;
+  display: inline-block;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  margin-right: 8px;
+  vertical-align: middle;
+}
 </style>
 """
+
+GREEN_TICK_PNG = """iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAS5JREFU
+OI3VkzFLw0AYhp+LV2pRrJ2l4B9wNUOmYsHJujpLF39AQCiCIBSKVJwd3F10K7iISxQqDuJgK0Ut
+peKkRQ0kHDYOIdGkHQp18V2Oj7vn4e7jO3FwLz3GiDYO/DcC5QgARlnfnhO0rPTgDZQjSEx6kcPx
++vNV8ni0xoLcp2WlUY5AOQIZmILDw+oALperZGYzWJ0mN71KtAeurXF1nKJ9PRMRxeGn3mkIA2iu
+7TteGtMU8zW4Ww8lw+BaZ4WAAfwnuLZGYWkDI2ug6zqlErQ55L1eiMAnjVVAIznVDyUTy0W5DdD9
+uKDvucxn8uRyOW7PJKa5GYP9fKmf/oi9y2RkEhfnTIzsTljH4XgGBqne3cXqbI0EA0jlDg6j9VAN
+ZcP2f0dUzlP//DN9A07KmLe0fWRJAAAAAElFTkSuQmCC"""
+
+GREY_TICK_PNG = """iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAOFJREFU
+OI3Fkz+OglAQhz90i2eHF+AcJDQQOu08BQWd27ONlnoQLsARKKheR6ieBYlP4naS0LiVZpOn+C/R
+KSf5vvxmJmMlSXLkhRq8Ar9f0LYHlFLPCdr2gNY7wjBkqzfn/tcj8Gq9YmyPsW2boijMBGVZ8rvf
+H/vgqqqQUpojbPWGOI4RI2GdJJfgNE3pus4UTCczPM9jsVgiRsJSSt2EAYa+7/8A1HWNEALHcQiC
+AK018+95L2wsMcsyAFzXJYoigF7YWOJJkuf5XbCR4L+kaRqklL3wVQFwvvOt+vwz/QEVoIxII0Qr
++gAAAABJRU5ErkJggg=="""
 
 DEPTH_TO_WIDTH_MAP = {
     3: '8%',
@@ -5207,6 +5280,7 @@ def _create_market_book_table(
     selection_count = sum(1 for r in market_book['marketDefinition']['runners'] if r['status'] != 'REMOVED')
     publish_time_as_datetime = datetime.datetime.utcfromtimestamp(market_book['publishTime'] / 1000)
     market_time_as_datetime = datetime.datetime.strptime(market_book['marketDefinition']['marketTime'], '%Y-%m-%dT%H:%M:%S.%fZ')
+    total_matched = '-' if market_book['totalMatched'] is None else f'{market_book["totalMatched"]:,}'
 
     if publish_time_as_datetime < market_time_as_datetime:
         relative_time_string = f'{market_time_as_datetime - publish_time_as_datetime} until marketTime'
@@ -5241,6 +5315,26 @@ def _create_market_book_table(
                     </div>
                 </div>
                 <div class="bf-col-9-24">
+                </div>
+            </div>
+        </div>
+        <div class="mv-header-container">
+            <div class="mv-header-content">
+                <div class="mv-header-main-section-wrapper">
+                    <div class="market-status mv-header-field market-going-inplay">
+                        <img src="data:image/png;base64, {GREEN_TICK_PNG if market_book['inplay'] else GREY_TICK_PNG}" style="float: left;">
+                        <span class="market-status-label" style="{'color: #090;' if market_book['inplay'] else ''}">
+                            {'In-Play' if market_book['inplay'] else 'Going In-Play'}
+                        </span>
+                    </div>
+                </div>
+                <div class="mv-secondary-section">
+                    <div class="mv-header-total-matched-wrapper">
+                        <div class="market-matched mv-header-field">
+                            <span class="total-matched-label">Matched:</span>
+                            <span class="total-matched">GBP {total_matched}</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
