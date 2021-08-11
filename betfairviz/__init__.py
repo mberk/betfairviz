@@ -5286,7 +5286,7 @@ def _create_market_book_table(
         total_matched = '-'
     elif market_book['totalMatched'] == 0:
         # If this is zero, it may be genuinely 0 or it may be historic data
-        total_matched = f'{round(calculate_total_matched(market_book), 2):,}'
+        total_matched = f'{round(calculate_total_matched(market_book), 2):,.2f}'
     else:
         total_matched = f'{market_book["totalMatched"]:,}'
 
