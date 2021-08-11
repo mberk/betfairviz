@@ -4522,7 +4522,7 @@ EXAMPLE_MARKET_BOOK = {
         'rc': []
     },
     'totalAvailable': None,
-    'totalMatched': None,
+    'totalMatched': 46114.73,
     'version': 3342028375
 }
 
