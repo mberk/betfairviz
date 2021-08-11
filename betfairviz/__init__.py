@@ -11,6 +11,7 @@ from IPython.display import Pretty
 from IPython.lib.pretty import pretty
 
 from betfairutil import calculate_book_percentage
+from betfairutil import calculate_total_matched
 from betfairutil import get_runner_book_from_market_book
 from betfairutil import is_market_book
 from betfairutil import is_runner_book
@@ -5280,7 +5281,14 @@ def _create_market_book_table(
     selection_count = sum(1 for r in market_book['marketDefinition']['runners'] if r['status'] != 'REMOVED')
     publish_time_as_datetime = datetime.datetime.utcfromtimestamp(market_book['publishTime'] / 1000)
     market_time_as_datetime = datetime.datetime.strptime(market_book['marketDefinition']['marketTime'], '%Y-%m-%dT%H:%M:%S.%fZ')
-    total_matched = '-' if market_book['totalMatched'] is None else f'{market_book["totalMatched"]:,}'
+
+    if market_book['totalMatched'] is None:
+        total_matched = '-'
+    elif market_book['totalMatched'] == 0:
+        # If this is zero, it may be genuinely 0 or it may be historic data
+        total_matched = f'{calculate_total_matched(market_book):,}'
+    else:
+        total_matched = f'{market_book["totalMatched"]:,}'
 
     if publish_time_as_datetime < market_time_as_datetime:
         relative_time_string = f'{market_time_as_datetime - publish_time_as_datetime} until marketTime'
