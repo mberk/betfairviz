@@ -5302,7 +5302,7 @@ def _create_market_book_table(
         venue_or_market_id = market_book['marketDefinition']['venue'] if 'venue' in market_book['marketDefinition'] else market_book['marketId']
         market_type = market_book['marketDefinition']['marketType'].replace('_', ' ').title()
         suffix = 'trnshddt'[0xc0006c000000006c >> 2 * market_time_as_datetime.day & 3::4]
-        title = f'{venue_or_market_id} {market_time_as_datetime:%d}{suffix} {market_time_as_datetime:%b} - {market_type}'
+        title = f'{venue_or_market_id} {market_time_as_datetime.day}{suffix} {market_time_as_datetime:%b} - {market_type}'
     html = f"""
         <div id="betfairviz">
         <div class="sports-header-container">
