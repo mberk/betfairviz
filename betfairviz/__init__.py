@@ -5552,7 +5552,17 @@ def _create_runner_book_html(runner_book: Union[Dict[str, Any], RunnerBook], run
     return CSS_STYLE + _create_runner_book_table(runner_book, runner_name=runner_name)
 
 
-def create_dashboard(market_books_or_path_to_prices_file: Union[str, List[Union[Dict[str, Any]]]]) -> widgets.Widget:
+def create_dashboard(
+        market_books_or_path_to_prices_file: Union[str, List[Union[Dict[str, Any]]]],
+        suppress_book_percentage_graph: bool = False) -> widgets.Widget:
+    try:
+        import google.colab
+        display(HTML('''<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"> '''))
+        link_function = widgets.link
+        suppress_book_percentage_graph = True
+    except ModuleNotFoundError:
+        link_function = widgets.jslink
+
     if type(market_books_or_path_to_prices_file) is str:
         path_to_prices_file = market_books_or_path_to_prices_file
         market_books = read_prices_file(path_to_prices_file)
@@ -5670,7 +5680,7 @@ def create_dashboard(market_books_or_path_to_prices_file: Union[str, List[Union[
     )
 
     depth_slider = widgets.IntSlider(description='Depth', min=3, max=5, value=3)
-    widgets.jslink((play, 'value'), (slider, 'value'))
+    link_function((play, 'value'), (slider, 'value'))
     fig = go.FigureWidget(data=[
         {
             'x': publish_times,
@@ -5728,30 +5738,31 @@ def create_dashboard(market_books_or_path_to_prices_file: Union[str, List[Union[
         }
     )
 
-    return widgets.VBox(
-        [
-            widgets.HBox(
-                [
-                    play,
-                    slider,
-                    step_backward_button,
-                    step_forward_button,
-                    in_play_button,
-                    depth_slider
-                ]
-            ),
-            widgets.HBox(
-                [
-                    show_runner_names_button,
-                    show_streaming_updates_button,
-                    show_wiped_out_prices_button,
-                    show_book_percentage_graph_button
-                ]
-            ),
-            out,
-            fig_box
-        ]
-    )
+    button_widgets = [
+        show_runner_names_button,
+        show_streaming_updates_button,
+        show_wiped_out_prices_button
+    ]
+    if not suppress_book_percentage_graph:
+        button_widgets.append(show_book_percentage_graph_button)
+    all_widgets = [
+        widgets.HBox(
+            [
+                play,
+                slider,
+                step_backward_button,
+                step_forward_button,
+                in_play_button,
+                depth_slider
+            ]
+        ),
+        widgets.HBox(button_widgets),
+        out
+    ]
+    if not suppress_book_percentage_graph:
+        all_widgets.append(fig_box)
+
+    return widgets.VBox(all_widgets)
 
 
 def visualise(
