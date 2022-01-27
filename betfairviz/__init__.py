@@ -5314,9 +5314,9 @@ def _create_market_book_diff_table(
                 <div>
                     <div class="runner-info">
                         <div class="default name ng-scope">
-                            <h3 class="runner-name ng-binding">
+                            <div class="runner-name ng-binding">
                                 {runner_name}
-                            </h3>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -5473,9 +5473,9 @@ def _create_market_book_table(
                 <div>
                     <div class="runner-info">
                         <div class="default name ng-scope">
-                            <h3 class="runner-name ng-binding">
+                            <div class="runner-name ng-binding">
                                 {runner_name}
-                            </h3>
+                            </div>
                         </div>
                     </div>
                 </div>
