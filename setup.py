@@ -7,7 +7,7 @@ requires = ["betfairlightweight", "betfairutil[files]>=0.0.2", "ipywidgets"]
 
 setup(
     name="betfairviz",
-    version="0.0.1",
+    version="0.1.0",
     description="Create visualisations of Betfair order books",
     long_description=long_description,
     long_description_content_type="text/markdown",
