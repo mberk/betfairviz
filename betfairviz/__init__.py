@@ -3,7 +3,7 @@ import datetime
 import itertools
 from copy import deepcopy
 from enum import Enum
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, NamedTuple, Optional, Union
 
 import babel.numbers
 import ipywidgets as widgets
@@ -23,6 +23,7 @@ from betfairutil import get_runner_book_from_market_book
 from betfairutil import is_market_book
 from betfairutil import is_runner_book
 from betfairutil import MarketBookDiff
+from betfairutil import publish_time_to_datetime
 from betfairutil import read_prices_file
 from betfairutil import Side
 
@@ -2235,6 +2236,11 @@ class Style(Enum):
     RAW = "raw"
 
 
+class PointOfInterest(NamedTuple):
+    text: str
+    timestamp: datetime.datetime
+
+
 def _create_market_book_diff_button(
     selection_id: int,
     market_book: Union[Dict[str, Any]],
@@ -2398,12 +2404,10 @@ def _create_market_book_table(
         for r in market_book["marketDefinition"]["runners"]
         if r["status"] != "REMOVED"
     )
-    publish_time_as_datetime = datetime.datetime.utcfromtimestamp(
-        market_book["publishTime"] / 1000
-    )
+    publish_time_as_datetime = publish_time_to_datetime(market_book["publishTime"])
     market_time_as_datetime = datetime.datetime.strptime(
         market_book["marketDefinition"]["marketTime"], "%Y-%m-%dT%H:%M:%S.%fZ"
-    )
+    ).replace(tzinfo=datetime.timezone.utc)
 
     if market_book["totalMatched"] is None:
         total_matched = "-"
@@ -2680,6 +2684,7 @@ def _create_runner_book_html(
 def create_dashboard(
     market_books_or_path_to_prices_file: Union[str, List[Union[Dict[str, Any]]]],
     annotations: Optional[List[Dict[str, Any]]] = None,
+    points_of_interest: Optional[List[PointOfInterest]] = None,
     runner_name_separator: str = "|",
     currency: str = "GBP",
     locale: str = "en_GB",
@@ -2707,6 +2712,8 @@ def create_dashboard(
             market_book_index_to_annotations_map[index] = latest_annotations
         else:
             latest_annotations = message
+    if points_of_interest is None:
+        points_of_interest = []
 
     in_play_index = None
     back_book_percentages = []
@@ -2727,7 +2734,14 @@ def create_dashboard(
                 market_book["publishTime"] / 1000
             ).replace(tzinfo=datetime.timezone.utc)
         )
+        publish_times.append(publish_time_to_datetime(market_book["publishTime"]))
     max_back_book_percentage = max(back_book_percentages)
+    point_of_interest_to_index_map = {
+        point_of_interest: bisect.bisect_left(
+            publish_times, point_of_interest.timestamp
+        )
+        for point_of_interest in points_of_interest
+    }
 
     def f(
         i,
@@ -2827,6 +2841,9 @@ def create_dashboard(
             i = bisect.bisect_left(raw_publish_times, change["new"])
             play.value = i
 
+    def go_to_point_of_interest(_):
+        play.value = point_of_interest_to_index_map[points_of_interest_dropdown.value]
+
     play = widgets.Play(min=0, max=len(market_books) - 1)
     slider = widgets.IntSlider(min=0, max=len(market_books) - 1, readout=False)
     index_text = widgets.BoundedIntText(
@@ -2866,6 +2883,17 @@ def create_dashboard(
     show_runner_names_button = widgets.ToggleButton(
         value=True, description="Show runner names", layout=toggle_button_layout
     )
+    points_of_interest_dropdown = widgets.Dropdown(
+        options=[
+            (point_of_interest.text, point_of_interest)
+            for point_of_interest in points_of_interest
+        ],
+        description="Points of Interest",
+        layout={"width": "max-content"},
+        style={"description_width": "initial"},
+    )
+    points_of_interest_go_button = widgets.Button(description="Go")
+    points_of_interest_go_button.on_click(go_to_point_of_interest)
 
     depth_slider = widgets.IntSlider(description="Depth", min=3, max=5, value=3)
     widgets.jslink((play, "value"), (slider, "value"))
@@ -2922,8 +2950,28 @@ def create_dashboard(
         },
     )
 
-    return widgets.VBox(
-        [
+    vbox_children = [
+        widgets.HBox(
+            [
+                play,
+                slider,
+                step_backward_button,
+                step_forward_button,
+                in_play_button,
+                depth_slider,
+            ]
+        ),
+        widgets.HBox(
+            [
+                show_runner_names_button,
+                show_streaming_updates_button,
+                show_wiped_out_prices_button,
+                show_book_percentage_graph_button,
+            ]
+        ),
+    ]
+    if points_of_interest:
+        vbox_children.append(
             widgets.HBox(
                 [
                     play,
@@ -2934,20 +2982,14 @@ def create_dashboard(
                     step_forward_button,
                     in_play_button,
                     depth_slider,
+                    points_of_interest_dropdown,
+                    points_of_interest_go_button,
                 ]
-            ),
-            widgets.HBox(
-                [
-                    show_runner_names_button,
-                    show_streaming_updates_button,
-                    show_wiped_out_prices_button,
-                    show_book_percentage_graph_button,
-                ]
-            ),
-            out,
-            fig_box,
-        ]
-    )
+            )
+        )
+    vbox_children.extend([out, fig_box])
+
+    return widgets.VBox(vbox_children)
 
 
 def visualise(
