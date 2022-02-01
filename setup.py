@@ -3,7 +3,7 @@ from setuptools import setup
 with open("README.md", "r") as f:
     long_description = f.read()
 
-requires = ["betfairlightweight", "betfairutil[files]>=0.0.2", "ipywidgets"]
+requires = ["betfairlightweight", "betfairutil[files]>=0.1.1", "ipywidgets"]
 
 setup(
     name="betfairviz",
