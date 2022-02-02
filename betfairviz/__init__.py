@@ -2759,7 +2759,7 @@ def create_dashboard(
             (point_of_interest.text, point_of_interest)
             for point_of_interest in points_of_interest
         ],
-        description="Points of Interest",
+        description="Points of Interest:",
         layout={"width": "max-content"},
         style={"description_width": "initial"},
     )
