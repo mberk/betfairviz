@@ -2790,6 +2790,19 @@ def create_dashboard(
                 "hoverinfo": "x",
                 "line": {"width": 1, "dash": "dash", "color": "#000000"},
             },
+            *[
+                {
+                    "x": [point_of_interest.timestamp, point_of_interest.timestamp],
+                    "y": [0, max_back_book_percentage + 0.2],
+                    "mode": "lines",
+                    "name": "Point of Interest",
+                    "hoverinfo": "text",
+                    "hovertext": point_of_interest.text,
+                    "line": {"width": 1, "color": "#000000"},
+                    "showlegend": i == 0
+                }
+                for i, point_of_interest in enumerate(points_of_interest)
+            ]
         ],
         layout={
             "xaxis": {
