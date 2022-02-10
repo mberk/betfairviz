@@ -2680,6 +2680,9 @@ def create_dashboard(
                     )
         else:
             new_market_book = market_books[i]
+        if points_of_interest:
+            plus_bet_delay_button.description = f'+{new_market_book["betDelay"]}s'
+            minus_bet_delay_button.description = f'-{new_market_book["betDelay"]}s'
         html = _create_market_book_html(
             new_market_book,
             depth=depth,
@@ -2728,6 +2731,17 @@ def create_dashboard(
     def go_to_point_of_interest(_):
         play.value = point_of_interest_to_index_map[points_of_interest_dropdown.value]
 
+    def step_bet_delay(button):
+        i = play.value
+        current_publish_time = publish_times[i]
+        bet_delay = int(market_books[i]["betDelay"])
+        if button == plus_bet_delay_button:
+            new_publish_time = current_publish_time + datetime.timedelta(seconds=bet_delay)
+        else:
+            new_publish_time = current_publish_time - datetime.timedelta(seconds=bet_delay)
+        new_i = bisect.bisect_left(publish_times, new_publish_time)
+        play.value = new_i
+
     play = widgets.Play(min=0, max=len(market_books) - 1)
     slider = widgets.IntSlider(min=0, max=len(market_books) - 1)
     in_play_button = widgets.Button(
@@ -2765,6 +2779,11 @@ def create_dashboard(
     )
     points_of_interest_go_button = widgets.Button(description="Go")
     points_of_interest_go_button.on_click(go_to_point_of_interest)
+    plus_bet_delay_button = widgets.Button()
+    plus_bet_delay_button.on_click(step_bet_delay)
+    minus_bet_delay_button = widgets.Button()
+    minus_bet_delay_button.on_click(step_bet_delay)
+
 
     depth_slider = widgets.IntSlider(description="Depth", min=3, max=5, value=3)
     widgets.jslink((play, "value"), (slider, "value"))
@@ -2860,6 +2879,8 @@ def create_dashboard(
                 [
                     points_of_interest_dropdown,
                     points_of_interest_go_button,
+                    plus_bet_delay_button,
+                    minus_bet_delay_button,
                 ]
             )
         )
