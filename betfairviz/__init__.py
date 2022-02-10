@@ -2799,7 +2799,8 @@ def create_dashboard(
                     "hoverinfo": "text",
                     "hovertext": point_of_interest.text,
                     "line": {"width": 1, "color": "#000000"},
-                    "showlegend": i == 0
+                    "showlegend": i == 0,
+                    "opacity": 0.5
                 }
                 for i, point_of_interest in enumerate(points_of_interest)
             ]
