@@ -2815,7 +2815,7 @@ def create_dashboard(
             },
             "hovermode": "x",
             "spikedistance": -1,
-            "hoverdistance": -1,
+            "hoverdistance": 100,
             "uirevision": True,
         },
     )
