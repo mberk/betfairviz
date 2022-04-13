@@ -2282,7 +2282,7 @@ def _create_market_book_diff_table(
             tokens.append(runner["name"])
         if is_non_runner:
             tokens.append("Non Runner")
-        runner_name = " - ".join(tokens)
+        runner_name = " | ".join(tokens)
         html += ""
         html += f"""
         <tr class="runner-line ng-scope">
@@ -2376,7 +2376,7 @@ def _create_market_book_table(
     if "eventName" in market_book["marketDefinition"]:
         title = market_book["marketDefinition"]["eventName"]
         if "name" in market_book["marketDefinition"]:
-            title += " - " + market_book["marketDefinition"]["name"]
+            title += " | " + market_book["marketDefinition"]["name"]
     else:  # handle self recorded data
         venue_or_market_id = (
             market_book["marketDefinition"]["venue"]
@@ -2400,7 +2400,7 @@ def _create_market_book_table(
                     </span>
                     <div>
                         <span class="date ng-binding ng-scope">
-                            {publish_time_as_datetime}: {relative_time_string} 
+                            {publish_time_as_datetime}: {relative_time_string}
                         </span>
                     </div>
                     <div>
@@ -2469,7 +2469,7 @@ def _create_market_book_table(
             tokens.append("Non Runner")
         elif runner["status"] == "WINNER":
             tokens.append("Winner")
-        runner_name = " - ".join(tokens)
+        runner_name = " | ".join(tokens)
         html += ""
         html += f"""
         <tr class="runner-line ng-scope">
