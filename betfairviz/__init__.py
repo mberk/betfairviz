@@ -2264,6 +2264,7 @@ def _create_market_book_diff_table(
     diff: MarketBookDiff,
     depth: int = 3,
     show_runner_names: bool = True,
+    runner_name_separator: str = "|",
 ) -> str:
     if type(market_book) != dict:
         market_book = market_book._data
@@ -2288,7 +2289,7 @@ def _create_market_book_diff_table(
             tokens.append(runner["name"])
         if is_non_runner:
             tokens.append("Non Runner")
-        runner_name = " | ".join(tokens)
+        runner_name = f" {runner_name_separator} ".join(tokens)
         html += ""
         html += f"""
         <tr class="runner-line ng-scope">
@@ -2348,6 +2349,7 @@ def _create_market_book_table(
     market_book: Union[Dict[str, Any], MarketBook],
     depth: int = 3,
     show_runner_names: bool = True,
+    runner_name_separator: str = "|",
 ) -> str:
     if type(market_book) != dict:
         market_book = market_book._data
@@ -2475,7 +2477,7 @@ def _create_market_book_table(
             tokens.append("Non Runner")
         elif runner["status"] == "WINNER":
             tokens.append("Winner")
-        runner_name = " | ".join(tokens)
+        runner_name = f" {runner_name_separator} ".join(tokens)
         html += ""
         html += f"""
         <tr class="runner-line ng-scope">
@@ -2580,11 +2582,15 @@ def _create_market_book_html(
     market_book: Union[Dict[str, Any], MarketBook],
     depth: int = 3,
     show_runner_names: bool = True,
+    runner_name_separator: str = "|",
 ) -> str:
     if type(market_book) != dict:
         market_book = market_book._data
     return CSS_STYLE + _create_market_book_table(
-        market_book, depth=depth, show_runner_names=show_runner_names
+        market_book,
+        depth=depth,
+        show_runner_names=show_runner_names,
+        runner_name_separator=runner_name_separator,
     )
 
 
@@ -2595,7 +2601,8 @@ def _create_runner_book_html(
 
 
 def create_dashboard(
-    market_books_or_path_to_prices_file: Union[str, List[Union[Dict[str, Any]]]]
+    market_books_or_path_to_prices_file: Union[str, List[Union[Dict[str, Any]]]],
+    runner_name_separator: str = "|",
 ) -> widgets.Widget:
     if type(market_books_or_path_to_prices_file) is str:
         path_to_prices_file = market_books_or_path_to_prices_file
@@ -2663,7 +2670,10 @@ def create_dashboard(
         else:
             new_market_book = market_books[i]
         html = _create_market_book_html(
-            new_market_book, depth=depth, show_runner_names=show_runner_names
+            new_market_book,
+            depth=depth,
+            show_runner_names=show_runner_names,
+            runner_name_separator=runner_name_separator,
         )
         if show_streaming_updates:
             if i > 0:
@@ -2671,7 +2681,11 @@ def create_dashboard(
             else:
                 diff = calculate_market_book_diff(new_market_book, market_books[i])
             html += _create_market_book_diff_table(
-                new_market_book, diff, depth=depth, show_runner_names=show_runner_names
+                new_market_book,
+                diff,
+                depth=depth,
+                show_runner_names=show_runner_names,
+                runner_name_separator=runner_name_separator,
             )
 
         display(HTML(html))
@@ -2811,6 +2825,7 @@ def visualise(
     market_book_or_runner_book: Union[Dict[str, Any], MarketBook, RunnerBook],
     depth: int = 3,
     show_runner_names: bool = True,
+    runner_name_separator: str = "|",
     runner_name: Optional[str] = None,
     style: Union[str, Style] = Style.DEFAULT,
 ) -> Union[HTML, Pretty]:
@@ -2827,6 +2842,7 @@ def visualise(
                     market_book=market_book,
                     depth=depth,
                     show_runner_names=show_runner_names,
+                    runner_name_separator=runner_name_separator,
                 )
             )
         elif style is Style.RAW:
