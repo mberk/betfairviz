@@ -1703,6 +1703,11 @@ CSS_STYLE = """
     font-size: 11px;
   }
 }
+
+#betfairviz .marketview-list-runners-component .mv-bet-button .bet-button-size.negative {
+  color: #f00;
+}
+
 #betfairviz .marketview-container .loading-wrapper {
   margin-top: 70px;
 }
@@ -2247,8 +2252,9 @@ def _create_market_book_diff_button(
             price = available[depth]["price"]
             size_change = size_changes.get(price)
             if size_change:
+                is_negative = "negative" if size_change < 0 else ""
                 html += f'<span class="bet-button-price">{round(available[depth]["price"], 2)}</span>'
-                html += f'<span class="bet-button-size">£{round(size_change, 2)}</span>'
+                html += f'<span class="bet-button-size {is_negative}">£{round(size_change, 2)}</span>'
     html += "</button>"
     return html
 
@@ -2282,7 +2288,7 @@ def _create_market_book_diff_table(
             tokens.append(runner["name"])
         if is_non_runner:
             tokens.append("Non Runner")
-        runner_name = " - ".join(tokens)
+        runner_name = " | ".join(tokens)
         html += ""
         html += f"""
         <tr class="runner-line ng-scope">
@@ -2376,7 +2382,7 @@ def _create_market_book_table(
     if "eventName" in market_book["marketDefinition"]:
         title = market_book["marketDefinition"]["eventName"]
         if "name" in market_book["marketDefinition"]:
-            title += " - " + market_book["marketDefinition"]["name"]
+            title += " | " + market_book["marketDefinition"]["name"]
     else:  # handle self recorded data
         venue_or_market_id = (
             market_book["marketDefinition"]["venue"]
@@ -2400,7 +2406,7 @@ def _create_market_book_table(
                     </span>
                     <div>
                         <span class="date ng-binding ng-scope">
-                            {publish_time_as_datetime}: {relative_time_string} 
+                            {publish_time_as_datetime}: {relative_time_string}
                         </span>
                     </div>
                     <div>
@@ -2469,7 +2475,7 @@ def _create_market_book_table(
             tokens.append("Non Runner")
         elif runner["status"] == "WINNER":
             tokens.append("Winner")
-        runner_name = " - ".join(tokens)
+        runner_name = " | ".join(tokens)
         html += ""
         html += f"""
         <tr class="runner-line ng-scope">
