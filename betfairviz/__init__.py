@@ -2736,9 +2736,13 @@ def create_dashboard(
         current_publish_time = publish_times[i]
         bet_delay = int(market_books[i]["betDelay"])
         if button == plus_bet_delay_button:
-            new_publish_time = current_publish_time + datetime.timedelta(seconds=bet_delay)
+            new_publish_time = current_publish_time + datetime.timedelta(
+                seconds=bet_delay
+            )
         else:
-            new_publish_time = current_publish_time - datetime.timedelta(seconds=bet_delay)
+            new_publish_time = current_publish_time - datetime.timedelta(
+                seconds=bet_delay
+            )
         new_i = bisect.bisect_left(publish_times, new_publish_time)
         play.value = new_i
 
@@ -2784,7 +2788,6 @@ def create_dashboard(
     minus_bet_delay_button = widgets.Button()
     minus_bet_delay_button.on_click(step_bet_delay)
 
-
     depth_slider = widgets.IntSlider(description="Depth", min=3, max=5, value=3)
     widgets.jslink((play, "value"), (slider, "value"))
     fig = go.FigureWidget(
@@ -2819,10 +2822,10 @@ def create_dashboard(
                     "hovertext": point_of_interest.text,
                     "line": {"width": 1, "color": "#000000"},
                     "showlegend": i == 0,
-                    "opacity": 0.5
+                    "opacity": 0.5,
                 }
                 for i, point_of_interest in enumerate(points_of_interest)
-            ]
+            ],
         ],
         layout={
             "xaxis": {
