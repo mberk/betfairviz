@@ -1703,6 +1703,11 @@ CSS_STYLE = """
     font-size: 11px;
   }
 }
+
+#betfairviz .marketview-list-runners-component .mv-bet-button .bet-button-size.is_negative {
+  color: #f00;
+}
+
 #betfairviz .marketview-container .loading-wrapper {
   margin-top: 70px;
 }
@@ -2247,8 +2252,9 @@ def _create_market_book_diff_button(
             price = available[depth]["price"]
             size_change = size_changes.get(price)
             if size_change:
+                is_negative = "is_negative" if size_change < 0 else ""
                 html += f'<span class="bet-button-price">{round(available[depth]["price"], 2)}</span>'
-                html += f'<span class="bet-button-size">£{round(size_change, 2)}</span>'
+                html += f'<span class="bet-button-size {is_negative}">£{round(size_change, 2)}</span>'
     html += "</button>"
     return html
 
