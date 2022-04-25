@@ -2370,7 +2370,7 @@ def _create_market_book_table(
     show_runner_names: bool = True,
     runner_name_separator: str = "|",
     currency: str = "GBP",
-    locale: str = "GB",
+    locale: str = "en_GB",
 ) -> str:
     if type(market_book) != dict:
         market_book = market_book._data
