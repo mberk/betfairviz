@@ -2390,9 +2390,9 @@ def _create_market_book_table(
         total_matched = "-"
     elif market_book["totalMatched"] == 0:
         # If this is zero, it may be genuinely 0 or it may be historic data
-        total_matched = f"{round(calculate_total_matched(market_book), 2):,.2f}"
+        total_matched = f"{babel.numbers.format_currency(round(calculate_total_matched(market_book), 2), currency=currency, locale=locale)}"
     else:
-        total_matched = f'{market_book["totalMatched"]:,}'
+        total_matched = f'{babel.numbers.format_currency(market_book["totalMatched"], currency=currency, locale=locale)}'
 
     if publish_time_as_datetime < market_time_as_datetime:
         relative_time_string = (
@@ -2456,7 +2456,7 @@ def _create_market_book_table(
                     <div class="mv-header-total-matched-wrapper">
                         <div class="market-matched mv-header-field">
                             <span class="total-matched-label">Matched:</span>
-                            <span class="total-matched">{currency} {total_matched}</span>
+                            <span class="total-matched">{total_matched}</span>
                         </div>
                     </div>
                 </div>
