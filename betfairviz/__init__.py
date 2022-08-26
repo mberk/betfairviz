@@ -4,6 +4,7 @@ from copy import deepcopy
 from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
+import babel.numbers
 import ipywidgets as widgets
 import plotly.graph_objects as go
 from betfairlightweight.resources.bettingresources import MarketBook
@@ -2239,6 +2240,8 @@ def _create_market_book_diff_button(
     diff: MarketBookDiff,
     side: Side,
     depth: int,
+    currency: str = "GBP",
+    locale: str = "en_GB",
 ) -> str:
     runner_book = get_runner_book_from_market_book(
         market_book, selection_id=selection_id, return_type=dict
@@ -2254,7 +2257,7 @@ def _create_market_book_diff_button(
             if size_change:
                 is_negative = "negative" if size_change < 0 else ""
                 html += f'<span class="bet-button-price">{round(available[depth]["price"], 2)}</span>'
-                html += f'<span class="bet-button-size {is_negative}">£{round(size_change, 2)}</span>'
+                html += f'<span class="bet-button-size {is_negative}">{babel.numbers.format_currency(size_change, currency=currency, locale=locale)}</span>'
     html += "</button>"
     return html
 
@@ -2265,6 +2268,8 @@ def _create_market_book_diff_table(
     depth: int = 3,
     show_runner_names: bool = True,
     runner_name_separator: str = "|",
+    currency: str = "GBP",
+    locale: str = "en_GB",
 ) -> str:
     if type(market_book) != dict:
         market_book = market_book._data
@@ -2309,13 +2314,25 @@ def _create_market_book_diff_table(
         for i in range(depth - 1, -1, -1):
             html += '<td class="bet-buttons">'
             html += _create_market_book_diff_button(
-                runner["id"], market_book, diff, Side.BACK, i
+                runner["id"],
+                market_book,
+                diff,
+                Side.BACK,
+                i,
+                currency=currency,
+                locale=locale,
             )
             html += "</td>"
         for i in range(depth):
             html += '<td class="bet-buttons">'
             html += _create_market_book_diff_button(
-                runner["id"], market_book, diff, Side.LAY, i
+                runner["id"],
+                market_book,
+                diff,
+                Side.LAY,
+                i,
+                currency=currency,
+                locale=locale,
             )
             html += "</td>"
         html += "</tr>"
@@ -2328,6 +2345,8 @@ def _create_market_book_button(
     market_book: Union[Dict[str, Any], MarketBook],
     side: Side,
     depth: int,
+    currency: str = "GBP",
+    locale: str = "en_GB",
 ) -> str:
     if type(market_book) != dict:
         market_book = market_book._data
@@ -2339,7 +2358,7 @@ def _create_market_book_button(
         available = runner_book.get("ex", {}).get(side.ex_key, [])
         if len(available) >= depth + 1:
             html += f'<span class="bet-button-price">{round(available[depth]["price"], 2)}</span>'
-            html += f'<span class="bet-button-size">£{round(available[depth]["size"], 2)}</span>'
+            html += f'<span class="bet-button-size">{babel.numbers.format_currency(available[depth]["size"], currency=currency, locale=locale)}</span>'
     html += "</button>"
 
     return html
@@ -2350,6 +2369,8 @@ def _create_market_book_table(
     depth: int = 3,
     show_runner_names: bool = True,
     runner_name_separator: str = "|",
+    currency: str = "GBP",
+    locale: str = "en_GB",
 ) -> str:
     if type(market_book) != dict:
         market_book = market_book._data
@@ -2369,9 +2390,9 @@ def _create_market_book_table(
         total_matched = "-"
     elif market_book["totalMatched"] == 0:
         # If this is zero, it may be genuinely 0 or it may be historic data
-        total_matched = f"{round(calculate_total_matched(market_book), 2):,.2f}"
+        total_matched = f"{babel.numbers.format_currency(round(calculate_total_matched(market_book), 2), currency=currency, locale=locale)}"
     else:
-        total_matched = f'{market_book["totalMatched"]:,}'
+        total_matched = f'{babel.numbers.format_currency(market_book["totalMatched"], currency=currency, locale=locale)}'
 
     if publish_time_as_datetime < market_time_as_datetime:
         relative_time_string = (
@@ -2435,7 +2456,7 @@ def _create_market_book_table(
                     <div class="mv-header-total-matched-wrapper">
                         <div class="market-matched mv-header-field">
                             <span class="total-matched-label">Matched:</span>
-                            <span class="total-matched">GBP {total_matched}</span>
+                            <span class="total-matched">{total_matched}</span>
                         </div>
                     </div>
                 </div>
@@ -2496,11 +2517,20 @@ def _create_market_book_table(
         """
         for i in range(depth - 1, -1, -1):
             html += '<td class="bet-buttons">'
-            html += _create_market_book_button(runner["id"], market_book, Side.BACK, i)
+            html += _create_market_book_button(
+                runner["id"],
+                market_book,
+                Side.BACK,
+                i,
+                currency=currency,
+                locale=locale,
+            )
             html += "</td>"
         for i in range(depth):
             html += '<td class="bet-buttons">'
-            html += _create_market_book_button(runner["id"], market_book, Side.LAY, i)
+            html += _create_market_book_button(
+                runner["id"], market_book, Side.LAY, i, currency=currency, locale=locale
+            )
             html += "</td>"
         html += "</tr>"
     html += "</table></div></div></div>"
@@ -2508,33 +2538,48 @@ def _create_market_book_table(
 
 
 def _create_runner_book_table(
-    runner_book: Union[Dict[str, Any], RunnerBook], runner_name: Optional[str] = None
+    runner_book: Union[Dict[str, Any], RunnerBook],
+    runner_name: Optional[str] = None,
+    currency: str = "GBP",
+    locale: str = "en_GB",
 ) -> str:
     if type(runner_book) is dict:
         price_to_atb = {
-            price_size["price"]: f"£{round(price_size['size'], 2)}"
+            price_size["price"]: babel.numbers.format_currency(
+                price_size["size"], currency=currency, locale=locale
+            )
             for price_size in runner_book["ex"]["availableToBack"]
         }
         price_to_atl = {
-            price_size["price"]: f"£{round(price_size['size'], 2)}"
+            price_size["price"]: babel.numbers.format_currency(
+                price_size["size"], currency=currency, locale=locale
+            )
             for price_size in runner_book["ex"]["availableToLay"]
         }
         price_to_trd = {
-            price_size["price"]: f"£{round(price_size['size'], 2)}"
+            price_size["price"]: babel.numbers.format_currency(
+                price_size["size"], currency=currency, locale=locale
+            )
             for price_size in runner_book["ex"]["tradedVolume"]
         }
         selection_id = runner_book["selectionId"]
     else:
         price_to_atb = {
-            price_size.price: f"£{round(price_size.size, 2)}"
+            price_size.price: babel.numbers.format_currency(
+                price_size.size, currency=currency, locale=locale
+            )
             for price_size in runner_book.ex.available_to_back
         }
         price_to_atl = {
-            price_size.price: f"£{round(price_size.size, 2)}"
+            price_size.price: babel.numbers.format_currency(
+                price_size.size, currency=currency, locale=locale
+            )
             for price_size in runner_book.ex.available_to_lay
         }
         price_to_trd = {
-            price_size.price: f"£{round(price_size.size, 2)}"
+            price_size.price: babel.numbers.format_currency(
+                price_size.size, currency=currency, locale=locale
+            )
             for price_size in runner_book.ex.traded_volume
         }
         selection_id = runner_book.selection_id
@@ -2583,6 +2628,8 @@ def _create_market_book_html(
     depth: int = 3,
     show_runner_names: bool = True,
     runner_name_separator: str = "|",
+    currency: str = "GBP",
+    locale: str = "en_GB",
 ) -> str:
     if type(market_book) != dict:
         market_book = market_book._data
@@ -2591,6 +2638,8 @@ def _create_market_book_html(
         depth=depth,
         show_runner_names=show_runner_names,
         runner_name_separator=runner_name_separator,
+        currency=currency,
+        locale=locale,
     )
 
 
@@ -2603,6 +2652,8 @@ def _create_runner_book_html(
 def create_dashboard(
     market_books_or_path_to_prices_file: Union[str, List[Union[Dict[str, Any]]]],
     runner_name_separator: str = "|",
+    currency: str = "GBP",
+    locale: str = "en_GB",
 ) -> widgets.Widget:
     if type(market_books_or_path_to_prices_file) is str:
         path_to_prices_file = market_books_or_path_to_prices_file
@@ -2674,6 +2725,8 @@ def create_dashboard(
             depth=depth,
             show_runner_names=show_runner_names,
             runner_name_separator=runner_name_separator,
+            currency=currency,
+            locale=locale,
         )
         if show_streaming_updates:
             if i > 0:
@@ -2686,6 +2739,8 @@ def create_dashboard(
                 depth=depth,
                 show_runner_names=show_runner_names,
                 runner_name_separator=runner_name_separator,
+                currency=currency,
+                locale=locale,
             )
 
         display(HTML(html))
@@ -2827,6 +2882,8 @@ def visualise(
     show_runner_names: bool = True,
     runner_name_separator: str = "|",
     runner_name: Optional[str] = None,
+    currency: str = "GBP",
+    locale: str = "en_GB",
     style: Union[str, Style] = Style.DEFAULT,
 ) -> Union[HTML, Pretty]:
     if (5 < depth) or (depth < 3):
@@ -2843,6 +2900,8 @@ def visualise(
                     depth=depth,
                     show_runner_names=show_runner_names,
                     runner_name_separator=runner_name_separator,
+                    currency=currency,
+                    locale=locale,
                 )
             )
         elif style is Style.RAW:
