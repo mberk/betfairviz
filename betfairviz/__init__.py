@@ -1,3 +1,4 @@
+import bisect
 import datetime
 import itertools
 from copy import deepcopy
@@ -2273,8 +2274,25 @@ def _create_market_book_diff_table(
 ) -> str:
     if type(market_book) != dict:
         market_book = market_book._data
+    delta_matched = f'{babel.numbers.format_currency(sum(deltas for selection_diff in diff.d.values() for deltas in selection_diff.get("tradedVolume", {}).values()), currency=currency, locale=locale)}'
     html = f"""
         <div id="betfairviz">
+        <div class="mv-header-container">
+            <div class="mv-header-content">
+                <div class="mv-header-main-section-wrapper">
+                    <div class="market-status mv-header-field market-going-inplay">
+                    </div>
+                </div>
+                <div class="mv-secondary-section">
+                    <div class="mv-header-total-matched-wrapper">
+                        <div class="market-matched mv-header-field">
+                            <span class="total-matched-label">Delta Matched:</span>
+                            <span class="total-matched">{delta_matched}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         <table class="runners-header">
             <thead>
                 <tr class="rh-line without-lay">
@@ -2665,6 +2683,7 @@ def create_dashboard(
     back_book_percentages = []
     lay_book_percentages = []
     publish_times = []
+    raw_publish_times = []
     for index, market_book in enumerate(market_books):
         in_play = (
             market_book["inplay"] if type(market_book) is dict else market_book.inplay
@@ -2673,6 +2692,7 @@ def create_dashboard(
             in_play_index = index
         back_book_percentages.append(calculate_book_percentage(market_book, Side.BACK))
         lay_book_percentages.append(calculate_book_percentage(market_book, Side.LAY))
+        raw_publish_times.append(market_book["publishTime"])
         publish_times.append(
             datetime.datetime.utcfromtimestamp(
                 market_book["publishTime"] / 1000
@@ -2750,6 +2770,8 @@ def create_dashboard(
         else:
             fig_box.layout.display = "none"
 
+        publish_time_text.value = raw_publish_times[i]
+
     def go_to_in_play(_):
         if in_play_index is not None:
             play.value = in_play_index
@@ -2769,15 +2791,41 @@ def create_dashboard(
     def fig_on_click(trace, points, selector):
         play.value = points.point_inds[0]
 
+    def publish_time_text_change(change):
+        if change["name"] == "value" and change["new"] != change["old"]:
+            i = bisect.bisect_left(raw_publish_times, change["new"])
+            play.value = i
+
     play = widgets.Play(min=0, max=len(market_books) - 1)
-    slider = widgets.IntSlider(min=0, max=len(market_books) - 1)
+    slider = widgets.IntSlider(min=0, max=len(market_books) - 1, readout=False)
+    index_text = widgets.BoundedIntText(
+        min=0,
+        max=len(market_books) - 1,
+        layout=widgets.Layout(width="150px")
+    )
+    publish_time_text = widgets.BoundedIntText(
+        min=min(raw_publish_times),
+        max=max(raw_publish_times),
+        layout=widgets.Layout(width="150px")
+    )
+    publish_time_text.observe(
+        publish_time_text_change
+    )
     in_play_button = widgets.Button(
         description="Go to In Play", disabled=in_play_index is None
     )
     in_play_button.on_click(go_to_in_play)
-    step_backward_button = widgets.Button(disabled=True, icon="step-backward")
+    step_backward_button = widgets.Button(
+        disabled=True,
+        icon="step-backward",
+        layout=widgets.Layout(width="45px")
+    )
     step_backward_button.on_click(step_backward)
-    step_forward_button = widgets.Button(disabled=False, icon="step-forward")
+    step_forward_button = widgets.Button(
+        disabled=False,
+        icon="step-forward",
+        layout=widgets.Layout(width="45px")
+    )
     step_forward_button.on_click(step_forward)
 
     toggle_button_layout = widgets.Layout(width="180px")
@@ -2798,6 +2846,7 @@ def create_dashboard(
 
     depth_slider = widgets.IntSlider(description="Depth", min=3, max=5, value=3)
     widgets.jslink((play, "value"), (slider, "value"))
+    widgets.jslink((slider, "value"), (index_text, "value"))
     fig = go.FigureWidget(
         data=[
             {
@@ -2856,6 +2905,8 @@ def create_dashboard(
                 [
                     play,
                     slider,
+                    index_text,
+                    publish_time_text,
                     step_backward_button,
                     step_forward_button,
                     in_play_button,
