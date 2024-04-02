@@ -6,6 +6,7 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
 import babel.numbers
+import betfairutil
 import ipywidgets as widgets
 import plotly.graph_objects as go
 from betfairlightweight.resources.bettingresources import MarketBook
@@ -2389,6 +2390,7 @@ def _create_market_book_table(
     runner_name_separator: str = "|",
     currency: str = "GBP",
     locale: str = "en_GB",
+    annotations: Optional[Dict[str, Any]] = None
 ) -> str:
     if type(market_book) != dict:
         market_book = market_book._data
@@ -2455,6 +2457,11 @@ def _create_market_book_table(
                             Market is {market_book['marketDefinition']['status']}
                         </span>
                     </div>
+                    <div>
+                        <span class="date ng-binding ng-scope">
+                            {annotations.get('global', '') if annotations is not None else ''}
+                        </span>
+                    </div>
                 </div>
                 <div class="bf-col-9-24">
                 </div>
@@ -2516,6 +2523,8 @@ def _create_market_book_table(
             tokens.append("Non Runner")
         elif runner["status"] == "WINNER":
             tokens.append("Winner")
+        if annotations is not None and str(runner["id"]) in annotations:
+            tokens.append(annotations[str(runner["id"])])
         runner_name = f" {runner_name_separator} ".join(tokens)
         html += ""
         html += f"""
@@ -2648,6 +2657,7 @@ def _create_market_book_html(
     runner_name_separator: str = "|",
     currency: str = "GBP",
     locale: str = "en_GB",
+    annotations: Optional[Dict[str, Any]] = None
 ) -> str:
     if type(market_book) != dict:
         market_book = market_book._data
@@ -2658,6 +2668,7 @@ def _create_market_book_html(
         runner_name_separator=runner_name_separator,
         currency=currency,
         locale=locale,
+        annotations=annotations
     )
 
 
@@ -2669,15 +2680,29 @@ def _create_runner_book_html(
 
 def create_dashboard(
     market_books_or_path_to_prices_file: Union[str, List[Union[Dict[str, Any]]]],
+    annotations: Optional[List[Dict[str, Any]]] = None,
     runner_name_separator: str = "|",
     currency: str = "GBP",
     locale: str = "en_GB",
 ) -> widgets.Widget:
+    annotations = annotations or []
+
     if type(market_books_or_path_to_prices_file) is str:
         path_to_prices_file = market_books_or_path_to_prices_file
         market_books = read_prices_file(path_to_prices_file)
     else:
         market_books = market_books_or_path_to_prices_file
+
+    messages = sorted(itertools.chain(market_books, annotations), key=lambda x: x["publishTime"])
+    index = -1
+    latest_annotations = None
+    market_book_index_to_annotations_map = {}
+    for message in messages:
+        if betfairutil.is_market_book(message):
+            index += 1
+            market_book_index_to_annotations_map[index] = latest_annotations
+        else:
+            latest_annotations = message
 
     in_play_index = None
     back_book_percentages = []
@@ -2708,6 +2733,7 @@ def create_dashboard(
         show_book_percentage_graph,
         show_runner_names,
     ):
+        _annotations = market_book_index_to_annotations_map[i]
         step_backward_button.disabled = play.value == 0
         step_forward_button.disabled = play.value == len(market_books) - 1
         if show_wiped_out_prices:
@@ -2747,6 +2773,7 @@ def create_dashboard(
             runner_name_separator=runner_name_separator,
             currency=currency,
             locale=locale,
+            annotations=_annotations,
         )
         if show_streaming_updates:
             if i > 0:
