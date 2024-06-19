@@ -2991,6 +2991,8 @@ def create_dashboard(
             [
                 play,
                 slider,
+                index_text,
+                publish_time_text,
                 step_backward_button,
                 step_forward_button,
                 in_play_button,
@@ -3010,14 +3012,6 @@ def create_dashboard(
         vbox_children.append(
             widgets.HBox(
                 [
-                    play,
-                    slider,
-                    index_text,
-                    publish_time_text,
-                    step_backward_button,
-                    step_forward_button,
-                    in_play_button,
-                    depth_slider,
                     points_of_interest_dropdown,
                     points_of_interest_go_button,
                     plus_bet_delay_button,
