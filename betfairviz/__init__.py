@@ -2729,11 +2729,6 @@ def create_dashboard(
         back_book_percentages.append(calculate_book_percentage(market_book, Side.BACK))
         lay_book_percentages.append(calculate_book_percentage(market_book, Side.LAY))
         raw_publish_times.append(market_book["publishTime"])
-        publish_times.append(
-            datetime.datetime.utcfromtimestamp(
-                market_book["publishTime"] / 1000
-            ).replace(tzinfo=datetime.timezone.utc)
-        )
         publish_times.append(publish_time_to_datetime(market_book["publishTime"]))
     max_back_book_percentage = max(back_book_percentages)
     point_of_interest_to_index_map = {
