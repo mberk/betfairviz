@@ -2842,6 +2842,26 @@ def create_dashboard(
     def go_to_point_of_interest(_):
         play.value = point_of_interest_to_index_map[points_of_interest_dropdown.value]
 
+    def points_of_interest_step_backward(_):
+        indices = list(point_of_interest_to_index_map.values())
+
+        i = bisect.bisect_left(indices, play.value)
+        if i > 0:
+            play.value = indices[i - 1]
+
+        points_of_interest_step_backward_button.disabled = i == 0
+        points_of_interest_step_forward_button.disabled = False
+
+    def points_of_interest_step_forward(_):
+        indices = list(point_of_interest_to_index_map.values())
+        i = bisect.bisect_right(indices, play.value)
+
+        if i < len(indices):
+            play.value = indices[i]
+
+        points_of_interest_step_backward_button.disabled = False
+        points_of_interest_step_forward_button.disabled = i == len(indices)
+
     def step_bet_delay(button):
         i = play.value
         current_publish_time = publish_times[i]
@@ -2907,6 +2927,18 @@ def create_dashboard(
     )
     points_of_interest_go_button = widgets.Button(description="Go")
     points_of_interest_go_button.on_click(go_to_point_of_interest)
+    points_of_interest_step_backward_button = widgets.Button(
+        disabled=True,
+        icon="step-backward",
+        layout=widgets.Layout(width="45px")
+    )
+    points_of_interest_step_backward_button.on_click(points_of_interest_step_backward)
+    points_of_interest_step_forward_button = widgets.Button(
+        disabled=False,
+        icon="step-forward",
+        layout=widgets.Layout(width="45px")
+    )
+    points_of_interest_step_forward_button.on_click(points_of_interest_step_forward)
     plus_bet_delay_button = widgets.Button()
     plus_bet_delay_button.on_click(step_bet_delay)
     minus_bet_delay_button = widgets.Button()
@@ -3009,6 +3041,8 @@ def create_dashboard(
                 [
                     points_of_interest_dropdown,
                     points_of_interest_go_button,
+                    points_of_interest_step_backward_button,
+                    points_of_interest_step_forward_button,
                     plus_bet_delay_button,
                     minus_bet_delay_button,
                 ]
