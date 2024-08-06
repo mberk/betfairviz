@@ -2848,6 +2848,7 @@ def create_dashboard(
         i = bisect.bisect_left(indices, play.value)
         if i > 0:
             play.value = indices[i - 1]
+            points_of_interest_dropdown.value = list(point_of_interest_to_index_map.keys())[i - 1]
 
         points_of_interest_step_backward_button.disabled = i == 0
         points_of_interest_step_forward_button.disabled = False
@@ -2858,6 +2859,7 @@ def create_dashboard(
 
         if i < len(indices):
             play.value = indices[i]
+            points_of_interest_dropdown.value = list(point_of_interest_to_index_map.keys())[i]
 
         points_of_interest_step_backward_button.disabled = False
         points_of_interest_step_forward_button.disabled = i == len(indices)
