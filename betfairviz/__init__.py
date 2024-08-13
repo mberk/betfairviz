@@ -2842,6 +2842,9 @@ def create_dashboard(
     def go_to_point_of_interest(_):
         play.value = point_of_interest_to_index_map[points_of_interest_dropdown.value]
 
+    def on_points_of_interest_dropdown_change(_):
+        go_to_point_of_interest(_)
+
     def points_of_interest_step_backward(_):
         indices = list(point_of_interest_to_index_map.values())
 
@@ -2927,6 +2930,7 @@ def create_dashboard(
         layout={"width": "max-content"},
         style={"description_width": "initial"},
     )
+    points_of_interest_dropdown.observe(on_points_of_interest_dropdown_change)
     points_of_interest_go_button = widgets.Button(description="Go")
     points_of_interest_go_button.on_click(go_to_point_of_interest)
     points_of_interest_step_backward_button = widgets.Button(
