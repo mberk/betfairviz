@@ -2931,8 +2931,6 @@ def create_dashboard(
         style={"description_width": "initial"},
     )
     points_of_interest_dropdown.observe(on_points_of_interest_dropdown_change)
-    points_of_interest_go_button = widgets.Button(description="Go")
-    points_of_interest_go_button.on_click(go_to_point_of_interest)
     points_of_interest_step_backward_button = widgets.Button(
         disabled=True,
         icon="step-backward",
@@ -3046,7 +3044,6 @@ def create_dashboard(
             widgets.HBox(
                 [
                     points_of_interest_dropdown,
-                    points_of_interest_go_button,
                     points_of_interest_step_backward_button,
                     points_of_interest_step_forward_button,
                     plus_bet_delay_button,
