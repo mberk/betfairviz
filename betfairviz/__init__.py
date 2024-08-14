@@ -2846,26 +2846,22 @@ def create_dashboard(
         go_to_point_of_interest(_)
 
     def points_of_interest_step_backward(_):
-        indices = list(point_of_interest_to_index_map.values())
+        i = points_of_interest.index(points_of_interest_dropdown.value)
 
-        i = bisect.bisect_left(indices, play.value)
         if i > 0:
-            play.value = indices[i - 1]
-            points_of_interest_dropdown.value = list(point_of_interest_to_index_map.keys())[i - 1]
+            points_of_interest_dropdown.value = points_of_interest[i - 1]
 
-        points_of_interest_step_backward_button.disabled = i == 0
+        points_of_interest_step_backward_button.disabled = i - 1 == 0
         points_of_interest_step_forward_button.disabled = False
 
     def points_of_interest_step_forward(_):
-        indices = list(point_of_interest_to_index_map.values())
-        i = bisect.bisect_right(indices, play.value)
+        i = points_of_interest.index(points_of_interest_dropdown.value)
 
-        if i < len(indices):
-            play.value = indices[i]
-            points_of_interest_dropdown.value = list(point_of_interest_to_index_map.keys())[i]
+        if i < len(points_of_interest):
+            points_of_interest_dropdown.value = points_of_interest[i + 1]
 
         points_of_interest_step_backward_button.disabled = False
-        points_of_interest_step_forward_button.disabled = i == len(indices)
+        points_of_interest_step_forward_button.disabled = i + 1 == len(points_of_interest) - 1
 
     def step_bet_delay(button):
         i = play.value
