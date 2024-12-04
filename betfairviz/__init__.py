@@ -6,7 +6,6 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
 import babel.numbers
-import betfairutil
 import ipywidgets as widgets
 import plotly.graph_objects as go
 from betfairlightweight.resources.bettingresources import MarketBook
@@ -2694,13 +2693,16 @@ def create_dashboard(
         market_books = market_books_or_path_to_prices_file
 
     messages = sorted(
-        itertools.chain(market_books, annotations), key=lambda x: x["publishTime"]
+        itertools.chain(
+            ((True, mb) for mb in market_books), ((False, a) for a in annotations)
+        ),
+        key=lambda x: x[1]["publishTime"],
     )
     index = -1
     latest_annotations = None
     market_book_index_to_annotations_map = {}
-    for message in messages:
-        if betfairutil.is_market_book(message):
+    for _is_market_book, message in messages:
+        if _is_market_book:
             index += 1
             market_book_index_to_annotations_map[index] = latest_annotations
         else:
