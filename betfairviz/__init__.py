@@ -2390,7 +2390,7 @@ def _create_market_book_table(
     runner_name_separator: str = "|",
     currency: str = "GBP",
     locale: str = "en_GB",
-    annotations: Optional[Dict[str, Any]] = None
+    annotations: Optional[Dict[str, Any]] = None,
 ) -> str:
     if type(market_book) != dict:
         market_book = market_book._data
@@ -2657,7 +2657,7 @@ def _create_market_book_html(
     runner_name_separator: str = "|",
     currency: str = "GBP",
     locale: str = "en_GB",
-    annotations: Optional[Dict[str, Any]] = None
+    annotations: Optional[Dict[str, Any]] = None,
 ) -> str:
     if type(market_book) != dict:
         market_book = market_book._data
@@ -2668,7 +2668,7 @@ def _create_market_book_html(
         runner_name_separator=runner_name_separator,
         currency=currency,
         locale=locale,
-        annotations=annotations
+        annotations=annotations,
     )
 
 
@@ -2693,7 +2693,9 @@ def create_dashboard(
     else:
         market_books = market_books_or_path_to_prices_file
 
-    messages = sorted(itertools.chain(market_books, annotations), key=lambda x: x["publishTime"])
+    messages = sorted(
+        itertools.chain(market_books, annotations), key=lambda x: x["publishTime"]
+    )
     index = -1
     latest_annotations = None
     market_book_index_to_annotations_map = {}
@@ -2826,32 +2828,24 @@ def create_dashboard(
     play = widgets.Play(min=0, max=len(market_books) - 1)
     slider = widgets.IntSlider(min=0, max=len(market_books) - 1, readout=False)
     index_text = widgets.BoundedIntText(
-        min=0,
-        max=len(market_books) - 1,
-        layout=widgets.Layout(width="150px")
+        min=0, max=len(market_books) - 1, layout=widgets.Layout(width="150px")
     )
     publish_time_text = widgets.BoundedIntText(
         min=min(raw_publish_times),
         max=max(raw_publish_times),
-        layout=widgets.Layout(width="150px")
+        layout=widgets.Layout(width="150px"),
     )
-    publish_time_text.observe(
-        publish_time_text_change
-    )
+    publish_time_text.observe(publish_time_text_change)
     in_play_button = widgets.Button(
         description="Go to In Play", disabled=in_play_index is None
     )
     in_play_button.on_click(go_to_in_play)
     step_backward_button = widgets.Button(
-        disabled=True,
-        icon="step-backward",
-        layout=widgets.Layout(width="45px")
+        disabled=True, icon="step-backward", layout=widgets.Layout(width="45px")
     )
     step_backward_button.on_click(step_backward)
     step_forward_button = widgets.Button(
-        disabled=False,
-        icon="step-forward",
-        layout=widgets.Layout(width="45px")
+        disabled=False, icon="step-forward", layout=widgets.Layout(width="45px")
     )
     step_forward_button.on_click(step_forward)
 
