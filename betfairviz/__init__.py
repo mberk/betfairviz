@@ -2276,9 +2276,9 @@ def _create_market_book_diff_table(
     currency: str = "GBP",
     locale: str = "en_GB",
 ) -> str:
-    if type(market_book) != dict:
+    if type(market_book) is not dict:
         market_book = market_book._data
-    delta_matched = f'{babel.numbers.format_currency(sum(deltas for selection_diff in diff.d.values() for deltas in selection_diff.get("tradedVolume", {}).values()), currency=currency, locale=locale)}'
+    delta_matched = f"{babel.numbers.format_currency(sum(deltas for selection_diff in diff.d.values() for deltas in selection_diff.get('tradedVolume', {}).values()), currency=currency, locale=locale)}"
     html = f"""
         <div id="betfairviz">
         <div class="mv-header-container">
@@ -2370,7 +2370,7 @@ def _create_market_book_button(
     currency: str = "GBP",
     locale: str = "en_GB",
 ) -> str:
-    if type(market_book) != dict:
+    if type(market_book) is not dict:
         market_book = market_book._data
     html = f'<button class="{side.value.lower()} mv-bet-button ng-isolate-scope {side.value.lower()}{"-selection" if depth == 0 else ""}-button">'
     runner_book = get_runner_book_from_market_book(
@@ -2395,7 +2395,7 @@ def _create_market_book_table(
     locale: str = "en_GB",
     annotations: Optional[Dict[str, Any]] = None,
 ) -> str:
-    if type(market_book) != dict:
+    if type(market_book) is not dict:
         market_book = market_book._data
     selection_count = sum(
         1
@@ -2413,7 +2413,7 @@ def _create_market_book_table(
         # If this is zero, it may be genuinely 0 or it may be historic data
         total_matched = f"{babel.numbers.format_currency(round(calculate_total_matched(market_book), 2), currency=currency, locale=locale)}"
     else:
-        total_matched = f'{babel.numbers.format_currency(market_book["totalMatched"], currency=currency, locale=locale)}'
+        total_matched = f"{babel.numbers.format_currency(market_book['totalMatched'], currency=currency, locale=locale)}"
 
     if publish_time_as_datetime < market_time_as_datetime:
         relative_time_string = (
@@ -2455,12 +2455,12 @@ def _create_market_book_table(
                     </div>
                     <div>
                         <span class="date ng-binding ng-scope">
-                            Market is {market_book['marketDefinition']['status']}
+                            Market is {market_book["marketDefinition"]["status"]}
                         </span>
                     </div>
                     <div>
                         <span class="date ng-binding ng-scope">
-                            {annotations.get('global', '') if annotations is not None else ''}
+                            {annotations.get("global", "") if annotations is not None else ""}
                         </span>
                     </div>
                 </div>
@@ -2472,9 +2472,9 @@ def _create_market_book_table(
             <div class="mv-header-content">
                 <div class="mv-header-main-section-wrapper">
                     <div class="market-status mv-header-field market-going-inplay">
-                        <img src="data:image/png;base64, {GREEN_TICK_PNG if market_book['inplay'] else GREY_TICK_PNG}" style="float: left;">
-                        <span class="market-status-label" style="{'color: #090;' if market_book['inplay'] else ''}">
-                            {'In-Play' if market_book['inplay'] else 'Going In-Play'}
+                        <img src="data:image/png;base64, {GREEN_TICK_PNG if market_book["inplay"] else GREY_TICK_PNG}" style="float: left;">
+                        <span class="market-status-label" style="{"color: #090;" if market_book["inplay"] else ""}">
+                            {"In-Play" if market_book["inplay"] else "Going In-Play"}
                         </span>
                     </div>
                 </div>
@@ -2637,10 +2637,10 @@ def _create_runner_book_table(
     for price in all_prices:
         html += f"""
                 <tr class="item ng-scope">
-                <td class="price{' back-color' if price in price_to_atb else ' lay-color' if price in price_to_atl else ''}">{round(price, 2)}</td>
-                <td class="back{' back-color' if price in price_to_atb else ''}">{price_to_atb.get(price, '')}</td>
-                <td class="lay{' lay-color' if price in price_to_atl else ''}">{price_to_atl.get(price, '')}</td>
-                <td class="traded">{price_to_trd.get(price, '')}</td>
+                <td class="price{" back-color" if price in price_to_atb else " lay-color" if price in price_to_atl else ""}">{round(price, 2)}</td>
+                <td class="back{" back-color" if price in price_to_atb else ""}">{price_to_atb.get(price, "")}</td>
+                <td class="lay{" lay-color" if price in price_to_atl else ""}">{price_to_atl.get(price, "")}</td>
+                <td class="traded">{price_to_trd.get(price, "")}</td>
                 </tr>
         """
     html += """
@@ -2660,7 +2660,7 @@ def _create_market_book_html(
     locale: str = "en_GB",
     annotations: Optional[Dict[str, Any]] = None,
 ) -> str:
-    if type(market_book) != dict:
+    if type(market_book) is not dict:
         market_book = market_book._data
     return CSS_STYLE + _create_market_book_table(
         market_book,
@@ -2778,8 +2778,8 @@ def create_dashboard(
         else:
             new_market_book = market_books[i]
         if points_of_interest:
-            plus_bet_delay_button.description = f'+{new_market_book["betDelay"]}s'
-            minus_bet_delay_button.description = f'-{new_market_book["betDelay"]}s'
+            plus_bet_delay_button.description = f"+{new_market_book['betDelay']}s"
+            minus_bet_delay_button.description = f"-{new_market_book['betDelay']}s"
         html = _create_market_book_html(
             new_market_book,
             depth=depth,
@@ -3092,7 +3092,7 @@ def visualise(
             raise ValueError(f"Unrecognised style: {style}")
     else:
         raise TypeError(
-            f"market_book_or_runner_book is neither a market book nor a runner book"
+            "market_book_or_runner_book is neither a market book nor a runner book"
         )
 
 
