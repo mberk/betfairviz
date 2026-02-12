@@ -8,24 +8,22 @@ from typing import Any, Dict, List, NamedTuple, Optional, Union
 import babel.numbers
 import ipywidgets as widgets
 import plotly.graph_objects as go
-from betfairlightweight.resources.bettingresources import MarketBook
-from betfairlightweight.resources.bettingresources import RunnerBook
+from betfairlightweight.resources.bettingresources import MarketBook, RunnerBook
+from betfairutil import (
+    MarketBookDiff,
+    Side,
+    calculate_book_percentage,
+    calculate_market_book_diff,
+    calculate_total_matched,
+    get_runner_book_from_market_book,
+    is_market_book,
+    is_runner_book,
+    publish_time_to_datetime,
+    read_prices_file,
+)
 from IPython import get_ipython
-from IPython.display import display
-from IPython.display import HTML
-from IPython.display import Pretty
+from IPython.display import HTML, Pretty, display
 from IPython.lib.pretty import pretty
-
-from betfairutil import calculate_market_book_diff
-from betfairutil import calculate_book_percentage
-from betfairutil import calculate_total_matched
-from betfairutil import get_runner_book_from_market_book
-from betfairutil import is_market_book
-from betfairutil import is_runner_book
-from betfairutil import MarketBookDiff
-from betfairutil import publish_time_to_datetime
-from betfairutil import read_prices_file
-from betfairutil import Side
 
 EXAMPLE_MARKET_BOOK = {
     "betDelay": 1,
@@ -2844,7 +2842,9 @@ def create_dashboard(
 
         i = points_of_interest.index(points_of_interest_dropdown.value)
         points_of_interest_step_backward_button.disabled = i == 0
-        points_of_interest_step_forward_button.disabled = i == len(points_of_interest) - 1
+        points_of_interest_step_forward_button.disabled = (
+            i == len(points_of_interest) - 1
+        )
 
     def on_points_of_interest_dropdown_change(_):
         go_to_point_of_interest(_)
@@ -2926,15 +2926,11 @@ def create_dashboard(
     )
     points_of_interest_dropdown.observe(on_points_of_interest_dropdown_change)
     points_of_interest_step_backward_button = widgets.Button(
-        disabled=True,
-        icon="step-backward",
-        layout=widgets.Layout(width="45px")
+        disabled=True, icon="step-backward", layout=widgets.Layout(width="45px")
     )
     points_of_interest_step_backward_button.on_click(points_of_interest_step_backward)
     points_of_interest_step_forward_button = widgets.Button(
-        disabled=False,
-        icon="step-forward",
-        layout=widgets.Layout(width="45px")
+        disabled=False, icon="step-forward", layout=widgets.Layout(width="45px")
     )
     points_of_interest_step_forward_button.on_click(points_of_interest_step_forward)
     plus_bet_delay_button = widgets.Button()
