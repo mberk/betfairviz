@@ -3,11 +3,17 @@ from setuptools import setup
 with open("README.md", "r") as f:
     long_description = f.read()
 
-requires = ["betfairlightweight", "betfairutil[files]>=0.0.2", "ipywidgets"]
+requires = [
+    "babel",
+    "betfairlightweight",
+    "betfairutil[files]>=0.1.1",
+    "ipywidgets",
+    "plotly",
+]
 
 setup(
     name="betfairviz",
-    version="0.1.0",
+    version="0.2.0",
     description="Create visualisations of Betfair order books",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -22,5 +28,5 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    python_requires=">=3.5",
+    python_requires=">=3.10",
 )

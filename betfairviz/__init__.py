@@ -1,28 +1,29 @@
+import bisect
 import datetime
 import itertools
 from copy import deepcopy
 from enum import Enum
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, NamedTuple, Optional, Union
 
+import babel.numbers
 import ipywidgets as widgets
 import plotly.graph_objects as go
-from betfairlightweight.resources.bettingresources import MarketBook
-from betfairlightweight.resources.bettingresources import RunnerBook
+from betfairlightweight.resources.bettingresources import MarketBook, RunnerBook
+from betfairutil import (
+    MarketBookDiff,
+    Side,
+    calculate_book_percentage,
+    calculate_market_book_diff,
+    calculate_total_matched,
+    get_runner_book_from_market_book,
+    is_market_book,
+    is_runner_book,
+    publish_time_to_datetime,
+    read_prices_file,
+)
 from IPython import get_ipython
-from IPython.display import display
-from IPython.display import HTML
-from IPython.display import Pretty
+from IPython.display import HTML, Pretty, display
 from IPython.lib.pretty import pretty
-
-from betfairutil import calculate_market_book_diff
-from betfairutil import calculate_book_percentage
-from betfairutil import calculate_total_matched
-from betfairutil import get_runner_book_from_market_book
-from betfairutil import is_market_book
-from betfairutil import is_runner_book
-from betfairutil import MarketBookDiff
-from betfairutil import read_prices_file
-from betfairutil import Side
 
 EXAMPLE_MARKET_BOOK = {
     "betDelay": 1,
@@ -1703,6 +1704,11 @@ CSS_STYLE = """
     font-size: 11px;
   }
 }
+
+#betfairviz .marketview-list-runners-component .mv-bet-button .bet-button-size.negative {
+  color: #f00;
+}
+
 #betfairviz .marketview-container .loading-wrapper {
   margin-top: 70px;
 }
@@ -2228,12 +2234,19 @@ class Style(Enum):
     RAW = "raw"
 
 
+class PointOfInterest(NamedTuple):
+    text: str
+    timestamp: datetime.datetime
+
+
 def _create_market_book_diff_button(
     selection_id: int,
     market_book: Union[Dict[str, Any]],
     diff: MarketBookDiff,
     side: Side,
     depth: int,
+    currency: str = "GBP",
+    locale: str = "en_GB",
 ) -> str:
     runner_book = get_runner_book_from_market_book(
         market_book, selection_id=selection_id, return_type=dict
@@ -2247,8 +2260,9 @@ def _create_market_book_diff_button(
             price = available[depth]["price"]
             size_change = size_changes.get(price)
             if size_change:
+                is_negative = "negative" if size_change < 0 else ""
                 html += f'<span class="bet-button-price">{round(available[depth]["price"], 2)}</span>'
-                html += f'<span class="bet-button-size">£{round(size_change, 2)}</span>'
+                html += f'<span class="bet-button-size {is_negative}">{babel.numbers.format_currency(size_change, currency=currency, locale=locale)}</span>'
     html += "</button>"
     return html
 
@@ -2258,11 +2272,31 @@ def _create_market_book_diff_table(
     diff: MarketBookDiff,
     depth: int = 3,
     show_runner_names: bool = True,
+    runner_name_separator: str = "|",
+    currency: str = "GBP",
+    locale: str = "en_GB",
 ) -> str:
-    if type(market_book) != dict:
+    if type(market_book) is not dict:
         market_book = market_book._data
+    delta_matched = f"{babel.numbers.format_currency(sum(deltas for selection_diff in diff.d.values() for deltas in selection_diff.get('tradedVolume', {}).values()), currency=currency, locale=locale)}"
     html = f"""
         <div id="betfairviz">
+        <div class="mv-header-container">
+            <div class="mv-header-content">
+                <div class="mv-header-main-section-wrapper">
+                    <div class="market-status mv-header-field market-going-inplay">
+                    </div>
+                </div>
+                <div class="mv-secondary-section">
+                    <div class="mv-header-total-matched-wrapper">
+                        <div class="market-matched mv-header-field">
+                            <span class="total-matched-label">Delta Matched:</span>
+                            <span class="total-matched">{delta_matched}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         <table class="runners-header">
             <thead>
                 <tr class="rh-line without-lay">
@@ -2282,7 +2316,7 @@ def _create_market_book_diff_table(
             tokens.append(runner["name"])
         if is_non_runner:
             tokens.append("Non Runner")
-        runner_name = " - ".join(tokens)
+        runner_name = f" {runner_name_separator} ".join(tokens)
         html += ""
         html += f"""
         <tr class="runner-line ng-scope">
@@ -2302,13 +2336,25 @@ def _create_market_book_diff_table(
         for i in range(depth - 1, -1, -1):
             html += '<td class="bet-buttons">'
             html += _create_market_book_diff_button(
-                runner["id"], market_book, diff, Side.BACK, i
+                runner["id"],
+                market_book,
+                diff,
+                Side.BACK,
+                i,
+                currency=currency,
+                locale=locale,
             )
             html += "</td>"
         for i in range(depth):
             html += '<td class="bet-buttons">'
             html += _create_market_book_diff_button(
-                runner["id"], market_book, diff, Side.LAY, i
+                runner["id"],
+                market_book,
+                diff,
+                Side.LAY,
+                i,
+                currency=currency,
+                locale=locale,
             )
             html += "</td>"
         html += "</tr>"
@@ -2321,8 +2367,10 @@ def _create_market_book_button(
     market_book: Union[Dict[str, Any], MarketBook],
     side: Side,
     depth: int,
+    currency: str = "GBP",
+    locale: str = "en_GB",
 ) -> str:
-    if type(market_book) != dict:
+    if type(market_book) is not dict:
         market_book = market_book._data
     html = f'<button class="{side.value.lower()} mv-bet-button ng-isolate-scope {side.value.lower()}{"-selection" if depth == 0 else ""}-button">'
     runner_book = get_runner_book_from_market_book(
@@ -2332,7 +2380,7 @@ def _create_market_book_button(
         available = runner_book.get("ex", {}).get(side.ex_key, [])
         if len(available) >= depth + 1:
             html += f'<span class="bet-button-price">{round(available[depth]["price"], 2)}</span>'
-            html += f'<span class="bet-button-size">£{round(available[depth]["size"], 2)}</span>'
+            html += f'<span class="bet-button-size">{babel.numbers.format_currency(available[depth]["size"], currency=currency, locale=locale)}</span>'
     html += "</button>"
 
     return html
@@ -2342,28 +2390,30 @@ def _create_market_book_table(
     market_book: Union[Dict[str, Any], MarketBook],
     depth: int = 3,
     show_runner_names: bool = True,
+    runner_name_separator: str = "|",
+    currency: str = "GBP",
+    locale: str = "en_GB",
+    annotations: Optional[Dict[str, Any]] = None,
 ) -> str:
-    if type(market_book) != dict:
+    if type(market_book) is not dict:
         market_book = market_book._data
     selection_count = sum(
         1
         for r in market_book["marketDefinition"]["runners"]
         if r["status"] != "REMOVED"
     )
-    publish_time_as_datetime = datetime.datetime.utcfromtimestamp(
-        market_book["publishTime"] / 1000
-    )
+    publish_time_as_datetime = publish_time_to_datetime(market_book["publishTime"])
     market_time_as_datetime = datetime.datetime.strptime(
         market_book["marketDefinition"]["marketTime"], "%Y-%m-%dT%H:%M:%S.%fZ"
-    )
+    ).replace(tzinfo=datetime.timezone.utc)
 
     if market_book["totalMatched"] is None:
         total_matched = "-"
     elif market_book["totalMatched"] == 0:
         # If this is zero, it may be genuinely 0 or it may be historic data
-        total_matched = f"{round(calculate_total_matched(market_book), 2):,.2f}"
+        total_matched = f"{babel.numbers.format_currency(round(calculate_total_matched(market_book), 2), currency=currency, locale=locale)}"
     else:
-        total_matched = f'{market_book["totalMatched"]:,}'
+        total_matched = f"{babel.numbers.format_currency(market_book['totalMatched'], currency=currency, locale=locale)}"
 
     if publish_time_as_datetime < market_time_as_datetime:
         relative_time_string = (
@@ -2376,7 +2426,7 @@ def _create_market_book_table(
     if "eventName" in market_book["marketDefinition"]:
         title = market_book["marketDefinition"]["eventName"]
         if "name" in market_book["marketDefinition"]:
-            title += " - " + market_book["marketDefinition"]["name"]
+            title += " | " + market_book["marketDefinition"]["name"]
     else:  # handle self recorded data
         venue_or_market_id = (
             market_book["marketDefinition"]["venue"]
@@ -2400,12 +2450,17 @@ def _create_market_book_table(
                     </span>
                     <div>
                         <span class="date ng-binding ng-scope">
-                            {publish_time_as_datetime}: {relative_time_string} 
+                            {publish_time_as_datetime}: {relative_time_string}
                         </span>
                     </div>
                     <div>
                         <span class="date ng-binding ng-scope">
-                            Market is {market_book['marketDefinition']['status']}
+                            Market is {market_book["marketDefinition"]["status"]}
+                        </span>
+                    </div>
+                    <div>
+                        <span class="date ng-binding ng-scope">
+                            {annotations.get("global", "") if annotations is not None else ""}
                         </span>
                     </div>
                 </div>
@@ -2417,9 +2472,9 @@ def _create_market_book_table(
             <div class="mv-header-content">
                 <div class="mv-header-main-section-wrapper">
                     <div class="market-status mv-header-field market-going-inplay">
-                        <img src="data:image/png;base64, {GREEN_TICK_PNG if market_book['inplay'] else GREY_TICK_PNG}" style="float: left;">
-                        <span class="market-status-label" style="{'color: #090;' if market_book['inplay'] else ''}">
-                            {'In-Play' if market_book['inplay'] else 'Going In-Play'}
+                        <img src="data:image/png;base64, {GREEN_TICK_PNG if market_book["inplay"] else GREY_TICK_PNG}" style="float: left;">
+                        <span class="market-status-label" style="{"color: #090;" if market_book["inplay"] else ""}">
+                            {"In-Play" if market_book["inplay"] else "Going In-Play"}
                         </span>
                     </div>
                 </div>
@@ -2427,7 +2482,7 @@ def _create_market_book_table(
                     <div class="mv-header-total-matched-wrapper">
                         <div class="market-matched mv-header-field">
                             <span class="total-matched-label">Matched:</span>
-                            <span class="total-matched">GBP {total_matched}</span>
+                            <span class="total-matched">{total_matched}</span>
                         </div>
                     </div>
                 </div>
@@ -2469,7 +2524,9 @@ def _create_market_book_table(
             tokens.append("Non Runner")
         elif runner["status"] == "WINNER":
             tokens.append("Winner")
-        runner_name = " - ".join(tokens)
+        if annotations is not None and str(runner["id"]) in annotations:
+            tokens.append(annotations[str(runner["id"])])
+        runner_name = f" {runner_name_separator} ".join(tokens)
         html += ""
         html += f"""
         <tr class="runner-line ng-scope">
@@ -2488,11 +2545,20 @@ def _create_market_book_table(
         """
         for i in range(depth - 1, -1, -1):
             html += '<td class="bet-buttons">'
-            html += _create_market_book_button(runner["id"], market_book, Side.BACK, i)
+            html += _create_market_book_button(
+                runner["id"],
+                market_book,
+                Side.BACK,
+                i,
+                currency=currency,
+                locale=locale,
+            )
             html += "</td>"
         for i in range(depth):
             html += '<td class="bet-buttons">'
-            html += _create_market_book_button(runner["id"], market_book, Side.LAY, i)
+            html += _create_market_book_button(
+                runner["id"], market_book, Side.LAY, i, currency=currency, locale=locale
+            )
             html += "</td>"
         html += "</tr>"
     html += "</table></div></div></div>"
@@ -2500,33 +2566,48 @@ def _create_market_book_table(
 
 
 def _create_runner_book_table(
-    runner_book: Union[Dict[str, Any], RunnerBook], runner_name: Optional[str] = None
+    runner_book: Union[Dict[str, Any], RunnerBook],
+    runner_name: Optional[str] = None,
+    currency: str = "GBP",
+    locale: str = "en_GB",
 ) -> str:
     if type(runner_book) is dict:
         price_to_atb = {
-            price_size["price"]: f"£{round(price_size['size'], 2)}"
+            price_size["price"]: babel.numbers.format_currency(
+                price_size["size"], currency=currency, locale=locale
+            )
             for price_size in runner_book["ex"]["availableToBack"]
         }
         price_to_atl = {
-            price_size["price"]: f"£{round(price_size['size'], 2)}"
+            price_size["price"]: babel.numbers.format_currency(
+                price_size["size"], currency=currency, locale=locale
+            )
             for price_size in runner_book["ex"]["availableToLay"]
         }
         price_to_trd = {
-            price_size["price"]: f"£{round(price_size['size'], 2)}"
+            price_size["price"]: babel.numbers.format_currency(
+                price_size["size"], currency=currency, locale=locale
+            )
             for price_size in runner_book["ex"]["tradedVolume"]
         }
         selection_id = runner_book["selectionId"]
     else:
         price_to_atb = {
-            price_size.price: f"£{round(price_size.size, 2)}"
+            price_size.price: babel.numbers.format_currency(
+                price_size.size, currency=currency, locale=locale
+            )
             for price_size in runner_book.ex.available_to_back
         }
         price_to_atl = {
-            price_size.price: f"£{round(price_size.size, 2)}"
+            price_size.price: babel.numbers.format_currency(
+                price_size.size, currency=currency, locale=locale
+            )
             for price_size in runner_book.ex.available_to_lay
         }
         price_to_trd = {
-            price_size.price: f"£{round(price_size.size, 2)}"
+            price_size.price: babel.numbers.format_currency(
+                price_size.size, currency=currency, locale=locale
+            )
             for price_size in runner_book.ex.traded_volume
         }
         selection_id = runner_book.selection_id
@@ -2556,10 +2637,10 @@ def _create_runner_book_table(
     for price in all_prices:
         html += f"""
                 <tr class="item ng-scope">
-                <td class="price{' back-color' if price in price_to_atb else ' lay-color' if price in price_to_atl else ''}">{round(price, 2)}</td>
-                <td class="back{' back-color' if price in price_to_atb else ''}">{price_to_atb.get(price, '')}</td>
-                <td class="lay{' lay-color' if price in price_to_atl else ''}">{price_to_atl.get(price, '')}</td>
-                <td class="traded">{price_to_trd.get(price, '')}</td>
+                <td class="price{" back-color" if price in price_to_atb else " lay-color" if price in price_to_atl else ""}">{round(price, 2)}</td>
+                <td class="back{" back-color" if price in price_to_atb else ""}">{price_to_atb.get(price, "")}</td>
+                <td class="lay{" lay-color" if price in price_to_atl else ""}">{price_to_atl.get(price, "")}</td>
+                <td class="traded">{price_to_trd.get(price, "")}</td>
                 </tr>
         """
     html += """
@@ -2574,11 +2655,21 @@ def _create_market_book_html(
     market_book: Union[Dict[str, Any], MarketBook],
     depth: int = 3,
     show_runner_names: bool = True,
+    runner_name_separator: str = "|",
+    currency: str = "GBP",
+    locale: str = "en_GB",
+    annotations: Optional[Dict[str, Any]] = None,
 ) -> str:
-    if type(market_book) != dict:
+    if type(market_book) is not dict:
         market_book = market_book._data
     return CSS_STYLE + _create_market_book_table(
-        market_book, depth=depth, show_runner_names=show_runner_names
+        market_book,
+        depth=depth,
+        show_runner_names=show_runner_names,
+        runner_name_separator=runner_name_separator,
+        currency=currency,
+        locale=locale,
+        annotations=annotations,
     )
 
 
@@ -2589,18 +2680,44 @@ def _create_runner_book_html(
 
 
 def create_dashboard(
-    market_books_or_path_to_prices_file: Union[str, List[Union[Dict[str, Any]]]]
+    market_books_or_path_to_prices_file: Union[str, List[Union[Dict[str, Any]]]],
+    annotations: Optional[List[Dict[str, Any]]] = None,
+    points_of_interest: Optional[List[PointOfInterest]] = None,
+    runner_name_separator: str = "|",
+    currency: str = "GBP",
+    locale: str = "en_GB",
 ) -> widgets.Widget:
+    annotations = annotations or []
+
     if type(market_books_or_path_to_prices_file) is str:
         path_to_prices_file = market_books_or_path_to_prices_file
         market_books = read_prices_file(path_to_prices_file)
     else:
         market_books = market_books_or_path_to_prices_file
 
+    messages = sorted(
+        itertools.chain(
+            ((True, mb) for mb in market_books), ((False, a) for a in annotations)
+        ),
+        key=lambda x: x[1]["publishTime"],
+    )
+    index = -1
+    latest_annotations = None
+    market_book_index_to_annotations_map = {}
+    for _is_market_book, message in messages:
+        if _is_market_book:
+            index += 1
+            market_book_index_to_annotations_map[index] = latest_annotations
+        else:
+            latest_annotations = message
+    if points_of_interest is None:
+        points_of_interest = []
+
     in_play_index = None
     back_book_percentages = []
     lay_book_percentages = []
     publish_times = []
+    raw_publish_times = []
     for index, market_book in enumerate(market_books):
         in_play = (
             market_book["inplay"] if type(market_book) is dict else market_book.inplay
@@ -2609,12 +2726,15 @@ def create_dashboard(
             in_play_index = index
         back_book_percentages.append(calculate_book_percentage(market_book, Side.BACK))
         lay_book_percentages.append(calculate_book_percentage(market_book, Side.LAY))
-        publish_times.append(
-            datetime.datetime.utcfromtimestamp(
-                market_book["publishTime"] / 1000
-            ).replace(tzinfo=datetime.timezone.utc)
-        )
+        raw_publish_times.append(market_book["publishTime"])
+        publish_times.append(publish_time_to_datetime(market_book["publishTime"]))
     max_back_book_percentage = max(back_book_percentages)
+    point_of_interest_to_index_map = {
+        point_of_interest: bisect.bisect_left(
+            publish_times, point_of_interest.timestamp
+        )
+        for point_of_interest in points_of_interest
+    }
 
     def f(
         i,
@@ -2624,6 +2744,7 @@ def create_dashboard(
         show_book_percentage_graph,
         show_runner_names,
     ):
+        _annotations = market_book_index_to_annotations_map[i]
         step_backward_button.disabled = play.value == 0
         step_forward_button.disabled = play.value == len(market_books) - 1
         if show_wiped_out_prices:
@@ -2656,8 +2777,17 @@ def create_dashboard(
                     )
         else:
             new_market_book = market_books[i]
+        if points_of_interest:
+            plus_bet_delay_button.description = f"+{new_market_book['betDelay']}s"
+            minus_bet_delay_button.description = f"-{new_market_book['betDelay']}s"
         html = _create_market_book_html(
-            new_market_book, depth=depth, show_runner_names=show_runner_names
+            new_market_book,
+            depth=depth,
+            show_runner_names=show_runner_names,
+            runner_name_separator=runner_name_separator,
+            currency=currency,
+            locale=locale,
+            annotations=_annotations,
         )
         if show_streaming_updates:
             if i > 0:
@@ -2665,7 +2795,13 @@ def create_dashboard(
             else:
                 diff = calculate_market_book_diff(new_market_book, market_books[i])
             html += _create_market_book_diff_table(
-                new_market_book, diff, depth=depth, show_runner_names=show_runner_names
+                new_market_book,
+                diff,
+                depth=depth,
+                show_runner_names=show_runner_names,
+                runner_name_separator=runner_name_separator,
+                currency=currency,
+                locale=locale,
             )
 
         display(HTML(html))
@@ -2674,6 +2810,8 @@ def create_dashboard(
             fig_box.layout.display = fig_box_original_display
         else:
             fig_box.layout.display = "none"
+
+        publish_time_text.value = raw_publish_times[i]
 
     def go_to_in_play(_):
         if in_play_index is not None:
@@ -2694,15 +2832,72 @@ def create_dashboard(
     def fig_on_click(trace, points, selector):
         play.value = points.point_inds[0]
 
+    def publish_time_text_change(change):
+        if change["name"] == "value" and change["new"] != change["old"]:
+            i = bisect.bisect_left(raw_publish_times, change["new"])
+            play.value = i
+
+    def go_to_point_of_interest(_):
+        play.value = point_of_interest_to_index_map[points_of_interest_dropdown.value]
+
+        i = points_of_interest.index(points_of_interest_dropdown.value)
+        points_of_interest_step_backward_button.disabled = i == 0
+        points_of_interest_step_forward_button.disabled = (
+            i == len(points_of_interest) - 1
+        )
+
+    def on_points_of_interest_dropdown_change(_):
+        go_to_point_of_interest(_)
+
+    def points_of_interest_step_backward(_):
+        i = points_of_interest.index(points_of_interest_dropdown.value)
+
+        if i > 0:
+            points_of_interest_dropdown.value = points_of_interest[i - 1]
+
+    def points_of_interest_step_forward(_):
+        i = points_of_interest.index(points_of_interest_dropdown.value)
+
+        if i < len(points_of_interest):
+            points_of_interest_dropdown.value = points_of_interest[i + 1]
+
+    def step_bet_delay(button):
+        i = play.value
+        current_publish_time = publish_times[i]
+        bet_delay = int(market_books[i]["betDelay"])
+        if button == plus_bet_delay_button:
+            new_publish_time = current_publish_time + datetime.timedelta(
+                seconds=bet_delay
+            )
+        else:
+            new_publish_time = current_publish_time - datetime.timedelta(
+                seconds=bet_delay
+            )
+        new_i = bisect.bisect_left(publish_times, new_publish_time)
+        play.value = new_i
+
     play = widgets.Play(min=0, max=len(market_books) - 1)
-    slider = widgets.IntSlider(min=0, max=len(market_books) - 1)
+    slider = widgets.IntSlider(min=0, max=len(market_books) - 1, readout=False)
+    index_text = widgets.BoundedIntText(
+        min=0, max=len(market_books) - 1, layout=widgets.Layout(width="150px")
+    )
+    publish_time_text = widgets.BoundedIntText(
+        min=min(raw_publish_times),
+        max=max(raw_publish_times),
+        layout=widgets.Layout(width="150px"),
+    )
+    publish_time_text.observe(publish_time_text_change)
     in_play_button = widgets.Button(
         description="Go to In Play", disabled=in_play_index is None
     )
     in_play_button.on_click(go_to_in_play)
-    step_backward_button = widgets.Button(disabled=True, icon="step-backward")
+    step_backward_button = widgets.Button(
+        disabled=True, icon="step-backward", layout=widgets.Layout(width="45px")
+    )
     step_backward_button.on_click(step_backward)
-    step_forward_button = widgets.Button(disabled=False, icon="step-forward")
+    step_forward_button = widgets.Button(
+        disabled=False, icon="step-forward", layout=widgets.Layout(width="45px")
+    )
     step_forward_button.on_click(step_forward)
 
     toggle_button_layout = widgets.Layout(width="180px")
@@ -2720,9 +2915,32 @@ def create_dashboard(
     show_runner_names_button = widgets.ToggleButton(
         value=True, description="Show runner names", layout=toggle_button_layout
     )
+    points_of_interest_dropdown = widgets.Dropdown(
+        options=[
+            (point_of_interest.text, point_of_interest)
+            for point_of_interest in points_of_interest
+        ],
+        description="Points of Interest:",
+        layout={"width": "max-content"},
+        style={"description_width": "initial"},
+    )
+    points_of_interest_dropdown.observe(on_points_of_interest_dropdown_change)
+    points_of_interest_step_backward_button = widgets.Button(
+        disabled=True, icon="step-backward", layout=widgets.Layout(width="45px")
+    )
+    points_of_interest_step_backward_button.on_click(points_of_interest_step_backward)
+    points_of_interest_step_forward_button = widgets.Button(
+        disabled=False, icon="step-forward", layout=widgets.Layout(width="45px")
+    )
+    points_of_interest_step_forward_button.on_click(points_of_interest_step_forward)
+    plus_bet_delay_button = widgets.Button()
+    plus_bet_delay_button.on_click(step_bet_delay)
+    minus_bet_delay_button = widgets.Button()
+    minus_bet_delay_button.on_click(step_bet_delay)
 
     depth_slider = widgets.IntSlider(description="Depth", min=3, max=5, value=3)
     widgets.jslink((play, "value"), (slider, "value"))
+    widgets.jslink((slider, "value"), (index_text, "value"))
     fig = go.FigureWidget(
         data=[
             {
@@ -2745,6 +2963,20 @@ def create_dashboard(
                 "hoverinfo": "x",
                 "line": {"width": 1, "dash": "dash", "color": "#000000"},
             },
+            *[
+                {
+                    "x": [point_of_interest.timestamp, point_of_interest.timestamp],
+                    "y": [0, max_back_book_percentage + 0.2],
+                    "mode": "lines",
+                    "name": "Point of Interest",
+                    "hoverinfo": "text",
+                    "hovertext": point_of_interest.text,
+                    "line": {"width": 1, "color": "#000000"},
+                    "showlegend": i == 0,
+                    "opacity": 0.5,
+                }
+                for i, point_of_interest in enumerate(points_of_interest)
+            ],
         ],
         layout={
             "xaxis": {
@@ -2756,7 +2988,7 @@ def create_dashboard(
             },
             "hovermode": "x",
             "spikedistance": -1,
-            "hoverdistance": -1,
+            "hoverdistance": 100,
             "uirevision": True,
         },
     )
@@ -2775,37 +3007,53 @@ def create_dashboard(
         },
     )
 
-    return widgets.VBox(
-        [
+    vbox_children = [
+        widgets.HBox(
+            [
+                play,
+                slider,
+                index_text,
+                publish_time_text,
+                step_backward_button,
+                step_forward_button,
+                in_play_button,
+                depth_slider,
+            ]
+        ),
+        widgets.HBox(
+            [
+                show_runner_names_button,
+                show_streaming_updates_button,
+                show_wiped_out_prices_button,
+                show_book_percentage_graph_button,
+            ]
+        ),
+    ]
+    if points_of_interest:
+        vbox_children.append(
             widgets.HBox(
                 [
-                    play,
-                    slider,
-                    step_backward_button,
-                    step_forward_button,
-                    in_play_button,
-                    depth_slider,
+                    points_of_interest_dropdown,
+                    points_of_interest_step_backward_button,
+                    points_of_interest_step_forward_button,
+                    plus_bet_delay_button,
+                    minus_bet_delay_button,
                 ]
-            ),
-            widgets.HBox(
-                [
-                    show_runner_names_button,
-                    show_streaming_updates_button,
-                    show_wiped_out_prices_button,
-                    show_book_percentage_graph_button,
-                ]
-            ),
-            out,
-            fig_box,
-        ]
-    )
+            )
+        )
+    vbox_children.extend([out, fig_box])
+
+    return widgets.VBox(vbox_children)
 
 
 def visualise(
     market_book_or_runner_book: Union[Dict[str, Any], MarketBook, RunnerBook],
     depth: int = 3,
     show_runner_names: bool = True,
+    runner_name_separator: str = "|",
     runner_name: Optional[str] = None,
+    currency: str = "GBP",
+    locale: str = "en_GB",
     style: Union[str, Style] = Style.DEFAULT,
 ) -> Union[HTML, Pretty]:
     if (5 < depth) or (depth < 3):
@@ -2821,6 +3069,9 @@ def visualise(
                     market_book=market_book,
                     depth=depth,
                     show_runner_names=show_runner_names,
+                    runner_name_separator=runner_name_separator,
+                    currency=currency,
+                    locale=locale,
                 )
             )
         elif style is Style.RAW:
@@ -2841,7 +3092,7 @@ def visualise(
             raise ValueError(f"Unrecognised style: {style}")
     else:
         raise TypeError(
-            f"market_book_or_runner_book is neither a market book nor a runner book"
+            "market_book_or_runner_book is neither a market book nor a runner book"
         )
 
 
